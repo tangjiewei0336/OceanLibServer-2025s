@@ -1,0 +1,6 @@
+package com.oriole.ocean.common.enumerate;
+
+public enum NotifyAction {
+    LIKE,DOWNLOAD,SCORED,INVITATION,FOCUS_USER,NEW_COMMENT,NEW_REPLY,LIKE_COMMENT,
+    DOC_CONTENT_ADVISOR,VIOLATION_DELETED
+}

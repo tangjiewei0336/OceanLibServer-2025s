@@ -1,0 +1,98 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oriole.ocean.dao.FileDao">
+
+    <resultMap id="file" type="com.oriole.ocean.common.po.mysql.FileEntity">
+        <id javaType="Integer" property="fileID" column="file_id" jdbcType="VARCHAR"/>
+
+        <result javaType="String" property="title" column="title" jdbcType="VARCHAR"/>
+        <result javaType="String" property="abstractContent" column="abstract_content" jdbcType="VARCHAR"/>
+        <result javaType="String" property="previewPictureObjectName" column="preview_picture_object_name"
+                jdbcType="INTEGER"/>
+        <result javaType="String" property="fileType" column="file_type" jdbcType="VARCHAR"/>
+        <result javaType="String" property="uploadUsername" column="upload_username" jdbcType="VARCHAR"/>
+        <result javaType="Date" property="uploadDate" column="upload_date" jdbcType="TIMESTAMP"/>
+        <result javaType="String" property="realObjectName" column="real_object_name" jdbcType="VARCHAR"/>
+        <result javaType="String" property="previewPdfObjectName" column="preview_pdf_object_name" jdbcType="VARCHAR"/>
+        <result javaType="Byte" property="paymentMethod" column="payment_method" jdbcType="TINYINT"/>
+        <result javaType="Integer" property="paymentAmount" column="payment_amount" jdbcType="INTEGER"/>
+        <association property="fileExtraEntity" javaType="com.oriole.ocean.common.po.mysql.FileExtraEntity"
+                     select="getFileExtraByFileID"
+                     column="{fileID=file_id}">
+        </association>
+        <collection property="tagNames" javaType="ArrayList" ofType="String" select="getAllTagNameByFileID"
+                    column="{fileID=file_id}">
+        </collection>
+    </resultMap>
+
+    <select id="getFileDetailInfoById" resultMap="file">
+        SELECT *
+        FROM file
+        WHERE file_id = #{fileID}
+    </select>
+
+    <select id="getFileDetailInfosByIds" resultMap="file">
+        SELECT DISTINCT * FROM file WHERE file_id IN
+        <foreach collection="fileIDs" index="index" item="item" separator="," open="(" close=")">
+            #{item}
+        </foreach>
+    </select>
+
+    <select id="getFileListByTypeIDAndTagIDAndIndexString" resultMap="file">
+        SELECT DISTINCT file.* FROM file
+        LEFT JOIN file_tag_map ON
+        file.file_id = file_tag_map.file_id
+        WHERE
+        <foreach collection="tagIDs" index="index" item="item" separator="OR" open="(" close=") AND">
+            file_tag_map.tag_id = #{item}
+        </foreach>
+        file.is_approved = 1
+        -- AND file.folder_id IS NULL
+        AND file.type_id = #{typeID}
+        AND file.index_string LIKE #{indexString}
+        ORDER BY hide_score ASC
+    </select>
+
+    <select id="getFileListByFolderID" resultMap="file">
+        SELECT file.*
+        FROM file
+        WHERE file.folder_id = #{folderID}
+        ORDER BY hide_score ASC
+    </select>
+
+    <select id="getFileListByUsername" resultMap="file">
+        SELECT file.*
+        FROM file
+        WHERE
+        <if test="isApproved">
+            file.is_approved = 1
+        </if>
+        <if test="!isApproved">
+            file.is_approved != 1
+        </if>
+        <if test="isFolder">
+            AND file.file_type = 'folder'
+        </if>
+        <if test="!isFolder">
+            AND file.file_type != 'folder'
+        </if>
+        AND file.upload_username = #{username}
+        ORDER BY hide_score ASC
+    </select>
+
+    <select id="getAllTagNameByFileID" resultType="String">
+        SELECT file_tag.tag_name
+        FROM file_tag_map,
+             file_tag
+        WHERE file_tag_map.tag_id = file_tag.tag_id
+          AND file_tag_map.file_id = #{fileID}
+    </select>
+
+    <select id="getFileExtraByFileID" resultType="com.oriole.ocean.common.po.mysql.FileExtraEntity">
+        SELECT *
+        FROM file_extra
+        WHERE file_extra.file_id = #{fileID}
+    </select>
+
+</mapper>

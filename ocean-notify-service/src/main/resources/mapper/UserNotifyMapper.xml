@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.oriole.ocean.dao.UserNotifyDao">
+
+    <resultMap id="userNotify" type="com.oriole.ocean.common.po.mysql.UserNotifyEntity">
+        <id javaType="Integer" property="id" column="id" jdbcType="INTEGER"/>
+
+        <result javaType="String" property="username" column="username" jdbcType="VARCHAR"/>
+        <result javaType="Byte" property="isRead" column="is_read" jdbcType="TINYINT"/>
+        <result javaType="Integer" property="notifyID" column="notify_id" jdbcType="INTEGER"/>
+        <result javaType="Date" property="buildDate" column="build_date" jdbcType="TIMESTAMP"/>
+        <association property="notifyEntity" javaType="com.oriole.ocean.common.po.mysql.NotifyEntity" select="getNotifyEntityByNotifyID"
+                     column="{NotifyID=notify_id}">
+        </association>
+    </resultMap>
+
+    <select id="getNotifyEntityByNotifyID" resultType="com.oriole.ocean.common.po.mysql.NotifyEntity">
+        SELECT * FROM notify WHERE notify.id = #{NotifyID}
+    </select>
+
+    <select id="getAllNotifyByUsernameAndLastPullDate" resultMap="userNotify">
+        SELECT * FROM user_notify WHERE username = #{username}
+        <if test="latestPullDate != null">
+            AND build_date >= #{latestPullDate}
+        </if>
+    </select>
+</mapper>

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="ocean-common" />
+        <module name="ocean-docs-file-service" />
+        <module name="ocean-docs-service" />
+        <module name="ocean-comment-service" />
+        <module name="ocean-notify-service" />
+        <module name="ocean-collection-service" />
+        <module name="ocean-user-service" />
+        <module name="ocean-gateway" />
+        <module name="ocean-user-behavior-service" />
+        <module name="ocean-note-service" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="ocean-docs-service (1)" target="1.5" />
+      <module name="ocean-docs-service (2)" target="1.5" />
+      <module name="springcloud-eureka-server" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="ocean-collection-service" options="-parameters" />
+      <module name="ocean-comment-service" options="-parameters" />
+      <module name="ocean-common" options="-parameters" />
+      <module name="ocean-docs-file-service" options="-parameters" />
+      <module name="ocean-docs-service" options="-parameters" />
+      <module name="ocean-gateway" options="-parameters" />
+      <module name="ocean-note-service" options="-parameters" />
+      <module name="ocean-notify-service" options="-parameters" />
+      <module name="ocean-user-behavior-service" options="-parameters" />
+      <module name="ocean-user-service" options="-parameters" />
+      <module name="springcloud-eureka-server" options="-parameters" />
+    </option>
+  </component>
+</project>

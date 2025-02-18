@@ -1,0 +1,74 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.6.15</version>
+  </parent>
+  <modules>
+    <module>ocean-common</module>
+    <module>ocean-user-service</module>
+    <module>ocean-gateway</module>
+    <module>ocean-user-behavior-service</module>
+    <module>ocean-docs-service</module>
+    <module>ocean-docs-file-service</module>
+    <module>ocean-collection-service</module>
+    <module>ocean-comment-service</module>
+    <module>ocean-notify-service</module>
+    <module>ocean-note-service</module>
+  </modules>
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.oriole</groupId>
+  <artifactId>ocean</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>ocean</name>
+  <url>http://maven.apache.org</url>
+
+  <dependencyManagement>
+    <dependencies>
+      <!--SPRING CLOUD ALIBABA DEPENDENCY-->
+      <dependency>
+        <groupId>com.alibaba.cloud</groupId>
+        <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+        <version>2021.0.5.0</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!--SPRING CLOUD DEPENDENCY-->
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>2021.0.8</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <!--DUBBO DEPENDENCY-->
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-spring-boot-starter</artifactId>
+        <version>3.0.9</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.dubbo</groupId>
+        <artifactId>dubbo-registry-nacos</artifactId>
+        <version>3.0.9</version>
+      </dependency>
+
+      <!--SWAGGER2 DEPENDENCY-->
+      <dependency>
+        <groupId>io.springfox</groupId>
+        <artifactId>springfox-swagger2</artifactId>
+        <version>2.9.2</version>
+      </dependency>
+      <dependency>
+        <groupId>io.springfox</groupId>
+        <artifactId>springfox-swagger-ui</artifactId>
+        <version>2.9.2</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+</project>
