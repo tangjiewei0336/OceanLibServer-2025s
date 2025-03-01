@@ -116,7 +116,7 @@ public class UserCommentController {
         AbstractComment returnEntity;
         //构建用户消息事件
         NotifyEntity notifyEntity = new NotifyEntity(NotifyType.REMIND,authUser.getUsername());
-        notifyEntity.setTargetIDAndType(bindID,mainType);
+        notifyEntity.setTargetIDAndType(String.valueOf(bindID),mainType);
         notifyEntity.setContent(commentContent);
         if (!isReply) {
             CommentEntity commentEntity = new CommentEntity(cid, authUser.getUsername(), commentContent);
