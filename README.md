@@ -4,7 +4,7 @@
 ![演示视频](https://github.com/NeoSunJZ/OceanLibServer/raw/refs/heads/master/Ocean%E4%BB%8B%E7%BB%8D%E8%A7%86%E9%A2%91.mp4
 )
 
-## 简介!
+## 简介
 
 Ocean文库为一个全开源的高校文库系统，实现百度文库的基本功能并基于高校场景进行创新，以期打破垄断，为高校建立专属文库提供支持。是首个开源且能够提供“商业化级”服务的高校文库平台软件。Ocean可使用K8S部署，基于SpringCloud与Vue技术栈，旨在建立一个在校大学生可自由分享、交换学霸笔记、习题试卷、课件资料的开放文库平台。
 

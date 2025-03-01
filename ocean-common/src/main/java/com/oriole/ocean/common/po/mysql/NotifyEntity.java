@@ -24,7 +24,7 @@ public class NotifyEntity implements java.io.Serializable {
     private NotifyType type;
 
     @TableField(value = "target_id")
-    private Integer targetID;
+    private String targetID;
     private MainType targetType;
 
     @TableField(value = "comment_id")
@@ -50,7 +50,7 @@ public class NotifyEntity implements java.io.Serializable {
         this.buildDate = new Date();
     }
 
-    public void setTargetIDAndType(Integer targetID,MainType targetType) {
+    public void setTargetIDAndType(String targetID,MainType targetType) {
         this.targetID = targetID;
         this.targetType = targetType;
     }

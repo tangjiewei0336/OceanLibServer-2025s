@@ -40,7 +40,7 @@ public class NotifyServiceImpl extends ServiceImpl<NotifyDao, NotifyEntity> impl
                 return;
         }
         notifyEntity.setUserBehaviorID(userBehaviorEntity.getId());
-        notifyEntity.setTargetIDAndType(userBehaviorEntity.getBindID(),userBehaviorEntity.getType());
+        notifyEntity.setTargetIDAndType(String.valueOf(userBehaviorEntity.getBindID()),userBehaviorEntity.getType());
         addNotify(notifyEntity);
     }
 

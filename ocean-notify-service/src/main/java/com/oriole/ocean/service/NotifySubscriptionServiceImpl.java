@@ -29,10 +29,8 @@ public class NotifySubscriptionServiceImpl extends ServiceImpl<NotifySubscriptio
 
     // 插入用户订阅
     public void setNotifySubscription(String username,List<NotifyAction> notifyActionList,String targetID, NotifySubscriptionTargetType targetType) {
-        List<NotifySubscriptionEntity> notifySubscriptionEntities = new ArrayList<>();
         for (NotifyAction action: notifyActionList) {
-            notifySubscriptionEntities.add(new NotifySubscriptionEntity(targetID, targetType, action, username));
+            save(new NotifySubscriptionEntity(targetID, targetType, action, username));
         }
-        saveBatch(notifySubscriptionEntities);
     }
 }
