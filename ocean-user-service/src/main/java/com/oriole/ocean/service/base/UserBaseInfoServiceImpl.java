@@ -26,8 +26,22 @@ public class UserBaseInfoServiceImpl extends ServiceImpl<UserDao, UserEntity> {
             throw new BusinessException("-3", "账号已锁定或被封禁，请联系管理员处理");
         }
         if (userEntity.getIsValid().equals((byte) 0)) {
-            throw new BusinessException("-4", "账号需等待管理员审核");
+            throw new BusinessException("-4", "账号需等待管理员审核"); // 刚进入注册认证
         }
         return userEntity;
+    }
+
+    public UserEntity banUser(String username) {
+        UserEntity userEntity = getById(username);
+        if (userEntity == null) {
+            throw new BusinessException("-1", "User not found");
+        }
+
+        // 设置用户状态为封禁，例如 is_valid = -1
+        userEntity.setIsValid((byte) -1);
+
+        // 更新用户信息
+        updateById(userEntity); // 假设这个方法会更新用户信息
+        return userEntity; // 返回被封禁的用户信息
     }
 }

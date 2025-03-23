@@ -25,4 +25,10 @@ public class AuthController {
         return new MsgEntity<>("SUCCESS","1", userEntity);
     }
 
+    @RequestMapping(value = "/ban", method = RequestMethod.PUT)
+    public MsgEntity<UserEntity> ban(@RequestParam String username) {
+        UserEntity userEntity = userBaseInfoService.banUser(username); // 假设该方法返回被封禁的用户信息
+        return new MsgEntity<>("SUCCESS", "1", userEntity);
+    }
+
 }

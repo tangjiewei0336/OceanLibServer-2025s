@@ -48,4 +48,10 @@ public class UserInfoController {
         return new MsgEntity<>("SUCCESS", "1",
                 userInfoService.getUserInfo(authUser.getUsername(), UserInfoLevel.ALL));
     }
+
+    @RequestMapping(value = "/updateUserInfo",method = RequestMethod.PUT)
+    public MsgEntity<UserEntity> updateUserInfo(@AuthUser AuthUserEntity authUser, @RequestBody UserEntity updatedInfo) {
+        return new MsgEntity<>("SUCCESS", "1",
+                userInfoService.updateUserInfo(authUser, updatedInfo));
+    }
 }
