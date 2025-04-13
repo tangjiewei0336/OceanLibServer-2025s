@@ -77,11 +77,11 @@ public class UserAuthGatewayFilterFactory extends AbstractGatewayFilterFactory<U
                             if(loginResponseObject.get("state").equals("SUCCESS") && loginResponseObject.get("code").equals("1")){
                                 JSONObject loginInfo = loginResponseObject.getJSONObject("msg");
 
-                                Map<String, Object> chaim = new HashMap<>();
-                                chaim.put("username", loginInfo.getString("username"));
-                                chaim.put("role", loginInfo.getString("role"));
+                                Map<String, Object> claim = new HashMap<>();
+                                claim.put("username", loginInfo.getString("username"));
+                                claim.put("role", loginInfo.getString("role"));
 
-                                String token = jwtUtils.encode(loginInfo.getString("username"), 24 * 60 * 60 * 1000, chaim);
+                                String token = jwtUtils.encode(loginInfo.getString("username"), 24 * 60 * 60 * 1000, claim);
 
                                 loginResponseObject.put("msg", token);
 

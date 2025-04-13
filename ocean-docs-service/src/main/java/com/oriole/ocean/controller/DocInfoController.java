@@ -141,6 +141,37 @@ public class DocInfoController {
         return new MsgEntity<>("SUCCESS", "1", fileEntityListPageInfo);
     }
 
+    @RequestMapping(value = "/getNotAcceptedFileList", method = RequestMethod.GET)
+    public MsgEntity<PageInfo<FileEntity>> getNotAcceptedFileList(@AuthUser AuthUserEntity authUser,
+                                                                  @RequestParam Integer approvedOrStatus,
+                                                                  @RequestParam Integer pageNum,
+                                                                  @RequestParam Integer pageSize) {
+        List<FileEntity> fileEntityList;
+
+        PageHelper.startPage(pageNum, pageSize, true);
+
+        if(approvedOrStatus == 0) {     // 待审核
+            fileEntityList = fileService.getPendingReviewFiles();
+        } else if(approvedOrStatus == 1) {  // 审核通过
+            fileEntityList = fileService.getApprovedFiles();
+        } else if(approvedOrStatus == 2) {  // 审核不通过
+            fileEntityList = fileService.getRejectedFiles();
+        } else {
+            return new MsgEntity<>("ERROR", "Invalid approvedOrStatus value", null);
+        }
+
+        // 补充文件检查信息（如需要）
+        for (FileEntity fileEntity : fileEntityList) {
+            FileCheckEntity fileCheckEntity = fileCheckService.getFileCheckInfo(fileEntity.getFileID());
+            if (fileCheckEntity != null) {
+                fileEntity.setFileCheckEntity(fileCheckEntity);
+            }
+        }
+
+        PageInfo<FileEntity> fileEntityListPageInfo = new PageInfo<>(fileEntityList);
+        return new MsgEntity<>("SUCCESS", "1", fileEntityListPageInfo);
+    }
+
     @RequestMapping(value = "/getRecentlyReadList", method = RequestMethod.GET)
     public MsgEntity<List<FileEntity>> getRecentlyReadList(@AuthUser AuthUserEntity authUser,
                                                            @RequestParam(required = false) String username) {
