@@ -96,7 +96,7 @@
     </select>
 
     <!-- 待审核文件查询 -->
-    <select id="getPendingReviewFiles" resultMap="BaseResultMap">
+    <select id="getPendingReviewFiles" resultMap="file">
         SELECT f.*
         FROM file f
                  LEFT JOIN file_check fc ON f.file_id = fc.file_id
@@ -105,14 +105,14 @@
     </select>
 
     <!-- 已审核通过文件查询 -->
-    <select id="getApprovedFiles" resultMap="BaseResultMap">
+    <select id="getApprovedFiles" resultMap="file">
         SELECT *
         FROM file
         WHERE is_approved = 1
     </select>
 
     <!-- 已拒绝文件查询 -->
-    <select id="getRejectedFiles" resultMap="BaseResultMap">
+    <select id="getRejectedFiles" resultMap="file">
         SELECT f.*
         FROM file f
                  INNER JOIN file_check fc ON f.file_id = fc.file_id
