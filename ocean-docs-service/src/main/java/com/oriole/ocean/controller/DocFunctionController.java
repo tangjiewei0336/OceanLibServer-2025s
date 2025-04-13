@@ -199,7 +199,7 @@ public class DocFunctionController {
         }
 
         // 2. 直接获取指定文件
-        FileEntity targetFile = fileService.getFileBaseInfoByFileID(fileID);
+        FileEntity targetFile = fileService.getFileDetailsInfoByFileID(fileID);
         if (targetFile == null) {
             return new MsgEntity<>("ERROR", "文件不存在", null);
         }
