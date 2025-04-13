@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.oriole.ocean.service.*;
+import com.oriole.ocean.common.po.mysql.FileCheckEntity;
+import java.util.Date;
 
 
 import java.util.HashMap;
@@ -41,6 +43,8 @@ public class DocFunctionController {
     UserBehaviorService userBehaviorService;
     @DubboReference
     UserWalletService userWalletService;
+    @Autowired
+    private FileCheckServiceImpl fileCheckService;
 
     @Value("${auth.download.token.secretkey}")
     public String DOWNLOAD_TOKEN_ENCODED_SECRET_KEY;
@@ -170,6 +174,85 @@ public class DocFunctionController {
         chaim.put("title", title);
         JwtUtils jwtUtils = new JwtUtils(DOWNLOAD_TOKEN_ENCODED_SECRET_KEY);
         return jwtUtils.encode(username, 60 * 1000, chaim);
+    }
+
+    /**
+     * 管理员审核文档（通过或拒绝）
+     * @param authUser 当前登录用户
+     * @param fileID 文件ID
+     * @param isApproved 是否通过 (1-通过, 0-拒绝)
+     * @param rejectReason 拒绝原因(拒绝时必填)
+     * @param agreeReason 通过理由(通过时可选)
+     * @return 处理结果
+     */
+    @RequestMapping(value = "/postFileCensor", method = RequestMethod.POST)
+    public MsgEntity<String> postFileCensor(
+            @AuthUser AuthUserEntity authUser,
+            @RequestParam Integer fileID,
+            @RequestParam Byte isApproved,
+            @RequestParam String rejectReason,
+            @RequestParam(required = false) String agreeReason
+    ) {
+        // 1. 验证用户权限
+        if (!authUser.isAdmin() && !authUser.isSuperAdmin()) {
+            return new MsgEntity<>("ERROR", "您没有审核文档的权限", null);
+        }
+
+        // 2. 获取待审核文件列表
+        List<FileEntity> pendingFiles = fileService.getPendingReviewFiles();
+
+        // 3. 检查提交的文件ID是否在待审核列表中
+        boolean isFilePending = false;
+        FileEntity targetFile = null;
+
+        for (FileEntity file : pendingFiles) {
+            if (file.getFileID().equals(fileID)) {
+                isFilePending = true;
+                targetFile = file;
+                break;
+            }
+        }
+
+        if (!isFilePending || targetFile == null) {
+            return new MsgEntity<>("ERROR", "文件不存在或不在待审核状态", null);
+        }
+
+        // 4. 审核处理
+        if (isApproved == 1) {
+            // 文档通过
+            // if (agreeReason == null || agreeReason.trim().isEmpty()) {
+            //     return new MsgEntity<>("ERROR", "通过文档必须提供通过理由", null);
+            // }
+
+            // 4.1 更新file表的is_approved字段为1
+            targetFile.setIsApproved((byte) 1);
+            fileService.saveOrUpdateFileInfo(targetFile);
+
+            // 4.2 创建或更新file_check记录
+            FileCheckEntity fileCheckEntity = new FileCheckEntity(fileID, (byte) 0, null);
+            fileCheckEntity.setAgreeReason(agreeReason);
+            fileCheckEntity.setProcessingTime(new Date());
+            fileCheckService.saveOrUpdateFileCheckInfo(fileCheckEntity);
+
+            return new MsgEntity<>("SUCCESS", "文档审核通过", null);
+        } else {
+            // 文档拒绝
+            // 验证拒绝原因是否提供
+            if (rejectReason == null || rejectReason.trim().isEmpty()) {
+                return new MsgEntity<>("ERROR", "拒绝文档必须提供拒绝原因", null);
+            }
+
+            // 4.1 确保file表的is_approved字段为0
+            targetFile.setIsApproved((byte) 0);
+            fileService.saveOrUpdateFileInfo(targetFile);
+
+            // 4.2 创建或更新file_check记录
+            FileCheckEntity fileCheckEntity = new FileCheckEntity(fileID, (byte) 1, rejectReason);
+            fileCheckEntity.setProcessingTime(new Date());
+            fileCheckService.saveOrUpdateFileCheckInfo(fileCheckEntity);
+
+            return new MsgEntity<>("SUCCESS", "文档已拒绝", null);
+        }
     }
 
 }

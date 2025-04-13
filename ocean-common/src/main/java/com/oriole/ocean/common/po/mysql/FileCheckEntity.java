@@ -18,6 +18,8 @@ public class FileCheckEntity implements java.io.Serializable {
     @TableField("processing_time")
     private Date processingTime;
     private String rejectReason;
+    @TableField("agree_reason")
+    private String agreeReason;
 
 
     public FileCheckEntity() {
@@ -28,5 +30,6 @@ public class FileCheckEntity implements java.io.Serializable {
         this.status = status;
         this.processingTime = new Date();
         this.rejectReason = rejectReason;
+        this.agreeReason = agreeReason;
     }
 }

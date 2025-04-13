@@ -146,6 +146,10 @@ public class DocInfoController {
                                                                   @RequestParam Integer approvedOrStatus,
                                                                   @RequestParam Integer pageNum,
                                                                   @RequestParam Integer pageSize) {
+        if (!authUser.isAdmin() && !authUser.isSuperAdmin()) {
+            return new MsgEntity<>("ERROR", "您没有审核文档的权限", null);
+        }
+
         List<FileEntity> fileEntityList;
 
         PageHelper.startPage(pageNum, pageSize, true);
