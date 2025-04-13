@@ -141,7 +141,7 @@ public class DocInfoController {
         return new MsgEntity<>("SUCCESS", "1", fileEntityListPageInfo);
     }
 
-    @RequestMapping(value = "/getNotAcceptedFileList", method = RequestMethod.GET)
+    @RequestMapping(value = "/getNotAcceptedFileListByFileStatement", method = RequestMethod.GET)
     public MsgEntity<PageInfo<FileEntity>> getNotAcceptedFileList(@AuthUser AuthUserEntity authUser,
                                                                   @RequestParam Integer approvedOrStatus,
                                                                   @RequestParam Integer pageNum,
