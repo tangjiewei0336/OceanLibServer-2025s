@@ -208,7 +208,7 @@ public class DocFunctionController {
 
         // 3. 更新文件审核状态
         targetFile.setIsApproved(isApproved);
-        fileService.saveOrUpdateFileInfo(targetFile);
+        fileService.updateById(targetFile);
 
         // 4. 处理审核记录 - 使用更健壮的方式检查和更新审核记录
         // 一定是否已存在审核记录
