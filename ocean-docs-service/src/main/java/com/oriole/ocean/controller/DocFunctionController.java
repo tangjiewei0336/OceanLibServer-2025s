@@ -198,31 +198,17 @@ public class DocFunctionController {
             return new MsgEntity<>("ERROR", "您没有审核文档的权限", null);
         }
 
-        // 2. 获取待审核文件列表
-        List<FileEntity> pendingFiles = fileService.getPendingReviewFiles();
-
-        // 3. 检查提交的文件ID是否在待审核列表中
-        boolean isFilePending = false;
-        FileEntity targetFile = null;
-
-        for (FileEntity file : pendingFiles) {
-            if (file.getFileID().equals(fileID)) {
-                isFilePending = true;
-                targetFile = file;
-                break;
-            }
+        // 2. 直接获取指定文件
+        FileEntity targetFile = fileService.getFileBaseInfoByFileID(fileID);
+        if (targetFile == null) {
+            return new MsgEntity<>("ERROR", "文件不存在", null);
         }
 
-        if (!isFilePending || targetFile == null) {
-            return new MsgEntity<>("ERROR", "文件不存在或不在待审核状态", null);
-        }
+        // 无需检查文件状态，因为前端有复审设计
 
-        // 4. 审核处理
+        // 3. 审核处理
         if (isApproved == 1) {
-            // 文档通过
-            // if (agreeReason == null || agreeReason.trim().isEmpty()) {
-            //     return new MsgEntity<>("ERROR", "通过文档必须提供通过理由", null);
-            // }
+            // 同意可不需理由
 
             // 4.1 更新file表的is_approved字段为1
             targetFile.setIsApproved((byte) 1);
