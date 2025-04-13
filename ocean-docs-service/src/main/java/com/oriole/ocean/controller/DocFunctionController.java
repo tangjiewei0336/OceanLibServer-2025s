@@ -44,7 +44,7 @@ public class DocFunctionController {
     @DubboReference
     UserWalletService userWalletService;
     @Autowired
-    private FileCheckServiceImpl fileCheckService;
+    FileCheckServiceImpl fileCheckService;
 
     @Value("${auth.download.token.secretkey}")
     public String DOWNLOAD_TOKEN_ENCODED_SECRET_KEY;

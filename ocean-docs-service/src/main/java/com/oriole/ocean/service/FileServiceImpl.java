@@ -63,7 +63,9 @@ public class FileServiceImpl extends ServiceImpl<FileDao, FileEntity> implements
 
     //保存或更新文章信息
     public void saveOrUpdateFileInfo(FileEntity fileEntity) {
-        saveOrUpdateFileInfo(fileEntity);
+        // 调用父类的 saveOrUpdate 方法，而不是自己
+        super.saveOrUpdate(fileEntity);
+
         FileExtraEntity fileExtraEntity = fileEntity.getFileExtraEntity();
         if (fileExtraEntity != null) {
             fileExtraEntity.setFileID(fileEntity.getFileID());
