@@ -211,26 +211,16 @@ public class DocFunctionController {
         fileService.saveOrUpdateFileInfo(targetFile);
 
         // 4. 处理审核记录 - 使用更健壮的方式检查和更新审核记录
-        // 检查是否已存在审核记录
+        // 一定是否已存在审核记录
         FileCheckEntity existingCheck = fileCheckService.getFileCheckInfo(fileID);
-        Date existingCheckTime = existingCheck.getProcessingTime();
 
-        if (existingCheckTime != null) {
-            // 已存在记录，更新现有记录
-            existingCheck.setStatus(isApproved == 1 ? (byte)0 : (byte)1);
-            existingCheck.setRejectReason(isApproved == 1 ? null : rejectReason);
-            existingCheck.setAgreeReason(isApproved == 1 ? agreeReason : null);
-            existingCheck.setProcessingTime(new Date());
-            fileCheckService.updateById(existingCheck);  // 直接调用updateById
-        } else {
-            // 不存在记录，创建新记录
-            FileCheckEntity fileCheckEntity = new FileCheckEntity(fileID,
-                    isApproved == 1 ? (byte)0 : (byte)1,
-                    isApproved == 1 ? null : rejectReason);
-            fileCheckEntity.setAgreeReason(isApproved == 1 ? agreeReason : null);
-            fileCheckEntity.setProcessingTime(new Date());
-            fileCheckService.save(fileCheckEntity);  // 直接调用save
-        }
+        // 一定存在记录，更新现有记录
+        existingCheck.setStatus(isApproved == 1 ? (byte)0 : (byte)1);
+        existingCheck.setRejectReason(isApproved == 1 ? null : rejectReason);
+        existingCheck.setAgreeReason(isApproved == 1 ? agreeReason : null);
+        existingCheck.setProcessingTime(new Date());
+        fileCheckService.updateById(existingCheck);  // 直接调用updateById
+
 
         // 5. 返回结果
         if (isApproved == 1) {
