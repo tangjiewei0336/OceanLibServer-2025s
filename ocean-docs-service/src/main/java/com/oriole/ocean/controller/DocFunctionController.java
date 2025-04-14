@@ -44,7 +44,7 @@ public class DocFunctionController {
     @DubboReference
     UserWalletService userWalletService;
     @Autowired
-    FileCheckServiceImpl fileCheckService;
+    private FileCheckServiceImpl fileCheckService;
 
     @Value("${auth.download.token.secretkey}")
     public String DOWNLOAD_TOKEN_ENCODED_SECRET_KEY;
@@ -206,11 +206,7 @@ public class DocFunctionController {
 
         // 无需检查文件状态，因为前端有复审设计
 
-        // 3. 更新文件审核状态
-        targetFile.setIsApproved(isApproved);
-        fileService.updateById(targetFile);
-
-        // 4. 处理审核记录 - 使用更健壮的方式检查和更新审核记录
+        // 3. 处理审核记录 - 使用更健壮的方式检查和更新审核记录
         // 一定是否已存在审核记录
         FileCheckEntity existingCheck = fileCheckService.getFileCheckInfo(fileID);
 
@@ -221,6 +217,9 @@ public class DocFunctionController {
         existingCheck.setProcessingTime(new Date());
         fileCheckService.updateById(existingCheck);  // 直接调用updateById
 
+        // 4. 更新文件审核状态
+        targetFile.setIsApproved(isApproved);
+        fileService.updateById(targetFile);
 
         // 5. 返回结果
         if (isApproved == 1) {
