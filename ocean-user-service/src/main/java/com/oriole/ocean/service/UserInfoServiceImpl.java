@@ -19,9 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -184,7 +182,7 @@ public class UserInfoServiceImpl {
     }
 
     /**
-     * 分页搜索用户信息
+     * 分页搜索用户信息，包含用户基本信息和额外信息
      * @return 包含分页信息和用户列表的 Page 对象
      */
     public Page<UserEntity> searchUsersWithPaging(
@@ -215,17 +213,19 @@ public class UserInfoServiceImpl {
 
         // 处理额外查询条件
         Set<String> matchingUsernames = null;
-        List<UserExtraEntity> extras = null;
+        Map<String, UserExtraEntity> extraMap = new HashMap<>();
 
         if (StringUtils.hasText(college) || StringUtils.hasText(major)) {
             QueryWrapper<UserExtraEntity> extraQuery = new QueryWrapper<>();
             if (StringUtils.hasText(college)) extraQuery.like("college", college);
             if (StringUtils.hasText(major)) extraQuery.like("major", major);
 
-            extras = userExtraDao.selectList(extraQuery);
-            matchingUsernames = extras.stream()
-                    .map(UserExtraEntity::getUsername)
-                    .collect(Collectors.toSet());
+            List<UserExtraEntity> extras = userExtraDao.selectList(extraQuery);
+
+            // 为提高后续查找效率，将额外信息放入Map
+            extras.forEach(extra -> extraMap.put(extra.getUsername(), extra));
+
+            matchingUsernames = extraMap.keySet();
 
             // 如果额外条件有匹配，加入用户名条件
             if (!matchingUsernames.isEmpty()) {
@@ -236,36 +236,55 @@ public class UserInfoServiceImpl {
             }
         }
 
-        // 使用 MyBatis-Plus 的分页查询（先计算总数，再查询指定页）
+        // 使用 MyBatis-Plus 的分页查询
         Page<UserEntity> page = new Page<>(pageNum, pageSize, true);
         Page<UserEntity> result = userDao.selectPage(page, userQuery);
 
-        // 处理额外信息和权限过滤
+        // 处理查询结果
         List<UserEntity> processedRecords = new ArrayList<>();
 
         for (UserEntity user : result.getRecords()) {
-            // 添加额外信息
-            if (extras != null) {
-                UserExtraEntity extra = extras.stream()
-                        .filter(e -> e.getUsername().equals(user.getUsername()))
-                        .findFirst().orElse(null);
-                user.setUserExtraEntity(extra);
+            // 根据权限获取可见的用户信息
+            UserEntity filteredUser = null;
+
+            if (infoLevel == UserInfoLevel.ALL) {
+                // 管理员可以看到完整信息
+                filteredUser = user;
             } else {
-                // 如果没有额外查询，也要确保加载用户额外信息
-                UserExtraEntity extra = userExtraDao.selectOne(
+                // 非管理员看到有限信息
+                filteredUser = new UserEntity(
+                        user.getUsername(),
+                        user.getNickname(),
+                        user.getAvatar(),
+                        user.getLevel() != null ? user.getLevel() : "Lv.0"
+                );
+            }
+
+            // 加载并设置用户额外信息
+            UserExtraEntity extra = null;
+
+            if (extraMap.containsKey(user.getUsername())) {
+                // 如果在前面查询中已找到
+                extra = extraMap.get(user.getUsername());
+            } else {
+                // 否则单独查询
+                extra = userExtraDao.selectOne(
                         new QueryWrapper<UserExtraEntity>().eq("username", user.getUsername())
                 );
-                user.setUserExtraEntity(extra);
+
+                // 将新查询到的额外信息也加入map便于后续使用
+                if (extra != null) {
+                    extraMap.put(user.getUsername(), extra);
+                }
             }
 
-            // 应用权限过滤 - 使用现有的 getUserInfo 方法获取过滤后的信息
-            UserEntity filteredUser = getUserInfo(user.getUsername(), infoLevel);
-            if (filteredUser != null) {
-                processedRecords.add(filteredUser);
-            }
+            // 设置额外信息
+            filteredUser.setUserExtraEntity(extra);
+
+            processedRecords.add(filteredUser);
         }
 
-        // 用过滤后的记录替换原始记录
+        // 用处理后的记录替换原始记录
         result.setRecords(processedRecords);
 
         return result;
