@@ -1,6 +1,7 @@
 package com.oriole.ocean.service.base;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.oriole.ocean.common.vo.AuthUserEntity;
 import com.oriole.ocean.common.vo.BusinessException;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.dao.UserDao;
@@ -31,17 +32,39 @@ public class UserBaseInfoServiceImpl extends ServiceImpl<UserDao, UserEntity> {
         return userEntity;
     }
 
-    public UserEntity banUser(String username) {
-        UserEntity userEntity = getById(username);
-        if (userEntity == null) {
+    public UserEntity banUser(AuthUserEntity authUser, String username) {
+        // 1. 获取执行操作的用户角色
+        String operatorRole = authUser.getRole();
+
+        // 2. 获取目标用户信息
+        UserEntity targetUser = getById(username);
+        if (targetUser == null) {
             throw new BusinessException("-1", "User not found");
         }
 
-        // 设置用户状态为封禁，例如 is_valid = -1
-        userEntity.setIsValid((byte) -1);
+        // 3. 获取目标用户角色
+        // 假设用户实体中有 role 字段，或者通过其他方式获取
+        String targetRole = targetUser.getRole();
 
-        // 更新用户信息
-        updateById(userEntity); // 假设这个方法会更新用户信息
-        return userEntity; // 返回被封禁的用户信息
+        // 4. 权限检查
+        if (!operatorRole.equals("ADMIN") && !operatorRole.equals("SUPERADMIN")) {
+            throw new BusinessException("-2", "Permission denied: Only administrators can ban users");
+        }
+
+        // 管理员试图封禁超级管理员
+        if (operatorRole.equals("ADMIN") && targetRole.equals("SUPERADMIN")) {
+            throw new BusinessException("-2", "Permission denied: Cannot ban SUPERADMIN");
+        }
+
+        // 管理员试图封禁其他管理员
+        if (operatorRole.equals("ADMIN") && targetRole.equals("ADMIN")) {
+            throw new BusinessException("-2", "Permission denied: Administrators cannot ban each other");
+        }
+
+        // 5. 执行封禁操作
+        targetUser.setIsValid((byte) -1);
+        updateById(targetUser);
+
+        return targetUser;
     }
 }

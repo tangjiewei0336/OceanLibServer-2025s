@@ -2,9 +2,12 @@ package com.oriole.ocean.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson2.JSON;
+import com.oriole.ocean.common.auth.AuthUser;
 import com.oriole.ocean.common.po.mysql.UserEntity;
+import com.oriole.ocean.common.vo.AuthUserEntity;
 import com.oriole.ocean.service.base.UserBaseInfoServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,9 +29,11 @@ public class AuthController {
     }
 
     @RequestMapping(value = "/ban", method = RequestMethod.PUT)
-    public MsgEntity<UserEntity> ban(@RequestParam String username) {
-        UserEntity userEntity = userBaseInfoService.banUser(username); // 假设该方法返回被封禁的用户信息
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public MsgEntity<UserEntity> ban(@AuthUser AuthUserEntity authUser, @RequestParam String username) {
+        UserEntity userEntity = userBaseInfoService.banUser(authUser, username);
         return new MsgEntity<>("SUCCESS", "1", userEntity);
     }
+
 
 }
