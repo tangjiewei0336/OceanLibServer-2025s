@@ -12,6 +12,7 @@ import com.oriole.ocean.service.UserInfoServiceImpl;
 import com.oriole.ocean.service.base.UserBaseInfoServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -76,6 +77,13 @@ public class UserInfoController {
         );
 
         return new MsgEntity<>("SUCCESS", "1", results);
+    }
+
+    @RequestMapping(value = "/ban", method = RequestMethod.PUT)
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
+    public MsgEntity<UserEntity> ban(@AuthUser AuthUserEntity authUser, @RequestParam String username) {
+        UserEntity userEntity = userBaseInfoService.banUser(authUser, username);
+        return new MsgEntity<>("SUCCESS", "1", userEntity);
     }
 
 }

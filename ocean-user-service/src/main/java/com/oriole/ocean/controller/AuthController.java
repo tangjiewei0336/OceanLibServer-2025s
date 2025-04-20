@@ -28,12 +28,4 @@ public class AuthController {
         return new MsgEntity<>("SUCCESS","1", userEntity);
     }
 
-    @RequestMapping(value = "/ban", method = RequestMethod.PUT)
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPERADMIN')")
-    public MsgEntity<UserEntity> ban(@AuthUser AuthUserEntity authUser, @RequestParam String username) {
-        UserEntity userEntity = userBaseInfoService.banUser(authUser, username);
-        return new MsgEntity<>("SUCCESS", "1", userEntity);
-    }
-
-
 }
