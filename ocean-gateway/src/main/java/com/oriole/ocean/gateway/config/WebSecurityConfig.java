@@ -59,9 +59,11 @@ public class WebSecurityConfig {
                 .authorizeExchange()
                 .pathMatchers(path).permitAll()
                 .pathMatchers(HttpMethod.OPTIONS).permitAll()
-                .pathMatchers("/userWalletService/**").hasAnyRole("USER","ADMIN")
-                .pathMatchers("/userInfoService/**").hasAnyRole("USER","ADMIN")
-                .pathMatchers("/userFunctionService/**").hasAnyRole("USER","ADMIN")
+                // 管理员资源 - 允许 ADMIN 和 SUPERADMIN
+                .pathMatchers("/admin/**").hasAnyRole("ADMIN", "SUPERADMIN")
+                // 普通用户资源 - 允许所有已认证用户
+                .pathMatchers("/userWalletService/**", "/userInfoService/**", "/userFunctionService/**")
+                .hasAnyRole("USER", "ADMIN", "SUPERADMIN")
                 .anyExchange().authenticated()
                 .and()
                 .httpBasic()
