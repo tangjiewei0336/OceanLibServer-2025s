@@ -181,10 +181,6 @@ public class UserInfoServiceImpl {
         return filteredResults;
     }
 
-    /**
-     * 分页搜索用户信息，包含用户基本信息和额外信息
-     * @return 包含分页信息和用户列表的 Page 对象
-     */
     public Page<UserEntity> searchUsersWithPaging(
             AuthUserEntity authUser,
             String username,
@@ -196,9 +192,9 @@ public class UserInfoServiceImpl {
             Integer pageSize) {
 
         // 基于用户角色确定信息访问级别
-        UserInfoLevel infoLevel = UserInfoLevel.LIMITED; // 默认为有限信息
+        UserInfoLevel infoLevel = UserInfoLevel.LIMITED;
         if (authUser.isAdmin() || authUser.isSuperAdmin()) {
-            infoLevel = UserInfoLevel.ALL; // 管理员可以看到全部信息
+            infoLevel = UserInfoLevel.ALL;
         }
 
         // 默认值处理
@@ -212,7 +208,6 @@ public class UserInfoServiceImpl {
         if (StringUtils.hasText(realname)) userQuery.like("realname", realname);
 
         // 处理额外查询条件
-        Set<String> matchingUsernames = null;
         Map<String, UserExtraEntity> extraMap = new HashMap<>();
 
         if (StringUtils.hasText(college) || StringUtils.hasText(major)) {
@@ -221,70 +216,56 @@ public class UserInfoServiceImpl {
             if (StringUtils.hasText(major)) extraQuery.like("major", major);
 
             List<UserExtraEntity> extras = userExtraDao.selectList(extraQuery);
-
-            // 为提高后续查找效率，将额外信息放入Map
             extras.forEach(extra -> extraMap.put(extra.getUsername(), extra));
 
-            matchingUsernames = extraMap.keySet();
-
-            // 如果额外条件有匹配，加入用户名条件
-            if (!matchingUsernames.isEmpty()) {
-                userQuery.in("username", matchingUsernames);
+            if (!extraMap.isEmpty()) {
+                userQuery.in("username", extraMap.keySet());
             } else {
-                // 如果没有匹配的额外信息，返回空结果
-                return new Page<>(pageNum, pageSize);
+                // 创建空结果页
+                Page<UserEntity> emptyPage = new Page<>(pageNum, pageSize);
+                emptyPage.setTotal(0);
+                emptyPage.setRecords(new ArrayList<>());
+                return emptyPage;
             }
         }
 
-        // 使用 MyBatis-Plus 的分页查询
+        // 计算总数并调整页码
+        long count = userDao.selectCount(userQuery);
+        long maxPage = (count + pageSize - 1) / pageSize;
+
+        if (maxPage > 0 && pageNum > maxPage) {
+            pageNum = (int) maxPage;
+        }
+
+        // 执行分页查询
         Page<UserEntity> page = new Page<>(pageNum, pageSize, true);
         Page<UserEntity> result = userDao.selectPage(page, userQuery);
 
-        // 处理查询结果
+        // 处理结果，加载额外信息
         List<UserEntity> processedRecords = new ArrayList<>();
 
         for (UserEntity user : result.getRecords()) {
-            // 根据权限获取可见的用户信息
-            UserEntity filteredUser = null;
+            // 根据权限过滤
+            UserEntity filteredUser = infoLevel == UserInfoLevel.ALL ?
+                    user :
+                    new UserEntity(
+                            user.getUsername(),
+                            user.getNickname(),
+                            user.getAvatar(),
+                            user.getLevel() != null ? user.getLevel() : "Lv.0"
+                    );
 
-            if (infoLevel == UserInfoLevel.ALL) {
-                // 管理员可以看到完整信息
-                filteredUser = user;
-            } else {
-                // 非管理员看到有限信息
-                filteredUser = new UserEntity(
-                        user.getUsername(),
-                        user.getNickname(),
-                        user.getAvatar(),
-                        user.getLevel() != null ? user.getLevel() : "Lv.0"
-                );
-            }
+            // 加载额外信息
+            UserExtraEntity extra = extraMap.getOrDefault(
+                    user.getUsername(),
+                    userExtraDao.selectOne(new QueryWrapper<UserExtraEntity>().eq("username", user.getUsername()))
+            );
 
-            // 加载并设置用户额外信息
-            UserExtraEntity extra = null;
-
-            if (extraMap.containsKey(user.getUsername())) {
-                // 如果在前面查询中已找到
-                extra = extraMap.get(user.getUsername());
-            } else {
-                // 否则单独查询
-                extra = userExtraDao.selectOne(
-                        new QueryWrapper<UserExtraEntity>().eq("username", user.getUsername())
-                );
-
-                // 将新查询到的额外信息也加入map便于后续使用
-                if (extra != null) {
-                    extraMap.put(user.getUsername(), extra);
-                }
-            }
-
-            // 设置额外信息
             filteredUser.setUserExtraEntity(extra);
-
             processedRecords.add(filteredUser);
         }
 
-        // 用处理后的记录替换原始记录
+        // 更新结果记录
         result.setRecords(processedRecords);
 
         return result;
