@@ -75,7 +75,9 @@ public class UserInfoServiceImpl {
             if (updatedInfo.getRole() != null) { // 允许更新角色
                 userEntity.setRole(updatedInfo.getRole());
             }
-
+            if (updatedInfo.getIsValid() != null) {
+                userEntity.setIsValid(updatedInfo.getIsValid());
+            }
         }
         if(authUser.isAdmin()) {
             if (updatedInfo.getNickname() != null) {
@@ -96,6 +98,14 @@ public class UserInfoServiceImpl {
             if (updatedInfo.getEmail() != null) {
                 userEntity.setEmail(updatedInfo.getEmail());
             }
+            if (updatedInfo.getIsValid() != null) {
+                // 检查被修改用户是否为管理员
+                if (userEntity.getRole() != null && userEntity.getRole().equals("admin") ) {
+                    throw new BusinessException("-4", "无权限封禁管理员");
+                }
+                userEntity.setIsValid(updatedInfo.getIsValid());
+            }
+
 
             UserExtraEntity updateInfoExtraEntity = updatedInfo.getUserExtraEntity();
             UserExtraEntity tempUserExtraEntity = userEntity.getUserExtraEntity();
@@ -121,6 +131,7 @@ public class UserInfoServiceImpl {
                 if (updateInfoExtraEntity.getPersonalSignature() != null) {
                     tempUserExtraEntity.setPersonalSignature(updateInfoExtraEntity.getPersonalSignature());
                 }
+
             } else {
                 throw new BusinessException("-3", "用户附加信息为空");
             }
