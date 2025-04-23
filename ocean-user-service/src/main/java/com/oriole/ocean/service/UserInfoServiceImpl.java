@@ -100,22 +100,31 @@ public class UserInfoServiceImpl {
             UserExtraEntity updateInfoExtraEntity = updatedInfo.getUserExtraEntity();
             UserExtraEntity tempUserExtraEntity = userEntity.getUserExtraEntity();
 
-            if (updateInfoExtraEntity.getCollege() != null) {
-                tempUserExtraEntity.setCollege(updateInfoExtraEntity.getCollege());
+            if (tempUserExtraEntity == null) {
+                tempUserExtraEntity = new UserExtraEntity();
+                userEntity.setUserExtraEntity(tempUserExtraEntity);
             }
-            if (updateInfoExtraEntity.getMajor() != null) {
-                tempUserExtraEntity.setMajor(updateInfoExtraEntity.getMajor());
+
+            if (updateInfoExtraEntity != null) {
+                if (updateInfoExtraEntity.getCollege() != null) {
+                    tempUserExtraEntity.setCollege(updateInfoExtraEntity.getCollege());
+                }
+                if (updateInfoExtraEntity.getMajor() != null) {
+                    tempUserExtraEntity.setMajor(updateInfoExtraEntity.getMajor());
+                }
+                if (updateInfoExtraEntity.getBirthday() != null) {
+                    tempUserExtraEntity.setBirthday(updateInfoExtraEntity.getBirthday());
+                }
+                if (updateInfoExtraEntity.getSex() != null) {
+                    tempUserExtraEntity.setSex(updateInfoExtraEntity.getSex());
+                }
+                if (updateInfoExtraEntity.getPersonalSignature() != null) {
+                    tempUserExtraEntity.setPersonalSignature(updateInfoExtraEntity.getPersonalSignature());
+                }
+            } else {
+                throw new BusinessException("-3", "用户附加信息为空");
             }
-            if (updateInfoExtraEntity.getBirthday() != null) {
-                tempUserExtraEntity.setBirthday(updateInfoExtraEntity.getBirthday());
-            }
-            if (updateInfoExtraEntity.getSex() != null) {
-                tempUserExtraEntity.setSex(updateInfoExtraEntity.getSex());
-            }
-            if (updateInfoExtraEntity.getPersonalSignature() != null) {
-                tempUserExtraEntity.setPersonalSignature(updateInfoExtraEntity.getPersonalSignature());
-            }
-        }else {
+        } else {
             throw new BusinessException("-2", "无权限更新此信息");  // 一般也不触发
         }
 
