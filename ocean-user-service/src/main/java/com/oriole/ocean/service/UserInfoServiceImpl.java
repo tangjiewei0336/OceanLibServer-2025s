@@ -90,6 +90,10 @@ public class UserInfoServiceImpl {
 
         // 管理员权限 (包括超级管理员)
         if (authUser.isAdmin()) {
+            // 明确禁止普通管理员修改任何人的角色
+            if (!authUser.isSuperAdmin() && updatedInfo.getRole() != null) {
+                throw new BusinessException("-6", "无权限修改用户角色");
+            }
             if (updatedInfo.getNickname() != null) {
                 userEntity.setNickname(updatedInfo.getNickname());
             }
@@ -109,10 +113,11 @@ public class UserInfoServiceImpl {
                 userEntity.setEmail(updatedInfo.getEmail());
             }
 
-            // 只有超级管理员能封禁管理员，普通管理员不能
+            // 只有超级管理员能封禁管理员和超级管理员，普通管理员不能
             if (!authUser.isSuperAdmin() && updatedInfo.getIsValid() != null) {
-                if (userEntity.getRole() != null && userEntity.getRole().equals("admin")) {
-                    throw new BusinessException("-4", "无权限封禁管理员");
+                if (userEntity.getRole() != null &&
+                        (userEntity.getRole().equals("admin") || userEntity.getRole().equals("superadmin"))) {
+                    throw new BusinessException("-4", "无权限封禁管理员或超级管理员");
                 }
                 userEntity.setIsValid(updatedInfo.getIsValid());
             }
