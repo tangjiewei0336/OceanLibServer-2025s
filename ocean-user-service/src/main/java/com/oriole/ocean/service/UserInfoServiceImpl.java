@@ -67,19 +67,29 @@ public class UserInfoServiceImpl {
     }
 
     public UserEntity updateUserInfo(AuthUserEntity authUser, UserEntity updatedInfo) {
-        UserEntity userEntity = userService.getById(authUser.getUsername());
+        UserEntity userEntity = userService.getById(updatedInfo.getUsername());
         if (userEntity == null) {
             throw new BusinessException("-1", "用户不存在");
         }
-        if(authUser.isSuperAdmin()) {
-            if (updatedInfo.getRole() != null) { // 允许更新角色
+
+        // 检查权限：管理员不能修改超级管理员的信息
+        if (authUser.isAdmin() && !authUser.isSuperAdmin() &&
+                userEntity.getRole() != null && userEntity.getRole().equals("superadmin")) {
+            throw new BusinessException("-5", "无权限修改超级管理员信息");
+        }
+
+        // 超级管理员特有权限
+        if (authUser.isSuperAdmin()) {
+            if (updatedInfo.getRole() != null) {
                 userEntity.setRole(updatedInfo.getRole());
             }
             if (updatedInfo.getIsValid() != null) {
                 userEntity.setIsValid(updatedInfo.getIsValid());
             }
         }
-        if(authUser.isAdmin()) {
+
+        // 管理员权限 (包括超级管理员)
+        if (authUser.isAdmin()) {
             if (updatedInfo.getNickname() != null) {
                 userEntity.setNickname(updatedInfo.getNickname());
             }
@@ -98,14 +108,14 @@ public class UserInfoServiceImpl {
             if (updatedInfo.getEmail() != null) {
                 userEntity.setEmail(updatedInfo.getEmail());
             }
-            if (updatedInfo.getIsValid() != null) {
-                // 检查被修改用户是否为管理员
-                if (userEntity.getRole() != null && userEntity.getRole().equals("admin") ) {
+
+            // 只有超级管理员能封禁管理员，普通管理员不能
+            if (!authUser.isSuperAdmin() && updatedInfo.getIsValid() != null) {
+                if (userEntity.getRole() != null && userEntity.getRole().equals("admin")) {
                     throw new BusinessException("-4", "无权限封禁管理员");
                 }
                 userEntity.setIsValid(updatedInfo.getIsValid());
             }
-
 
             UserExtraEntity updateInfoExtraEntity = updatedInfo.getUserExtraEntity();
             UserExtraEntity tempUserExtraEntity = userEntity.getUserExtraEntity();
@@ -131,12 +141,11 @@ public class UserInfoServiceImpl {
                 if (updateInfoExtraEntity.getPersonalSignature() != null) {
                     tempUserExtraEntity.setPersonalSignature(updateInfoExtraEntity.getPersonalSignature());
                 }
-
             } else {
                 throw new BusinessException("-3", "用户附加信息为空");
             }
         } else {
-            throw new BusinessException("-2", "无权限更新此信息");  // 一般也不触发
+            throw new BusinessException("-2", "无权限更新此信息");
         }
 
         // 更新用户信息到数据库
