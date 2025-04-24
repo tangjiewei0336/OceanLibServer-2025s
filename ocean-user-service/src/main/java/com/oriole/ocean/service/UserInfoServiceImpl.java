@@ -72,6 +72,13 @@ public class UserInfoServiceImpl {
             throw new BusinessException("-1", "用户不存在");
         }
 
+        // 如果角色信息被修改，且操作者不是超级管理员，立即拒绝
+        if (updatedInfo.getRole() != null &&
+                !updatedInfo.getRole().equals(userEntity.getRole()) &&
+                !authUser.isSuperAdmin()) {
+            throw new BusinessException("-6", "无权限修改用户角色");
+        }
+
         // 检查权限：管理员不能修改超级管理员的信息
         if (authUser.isAdmin() && !authUser.isSuperAdmin() &&
                 userEntity.getRole() != null && userEntity.getRole().equals("superadmin")) {
@@ -92,7 +99,7 @@ public class UserInfoServiceImpl {
 
         // 管理员权限 (包括超级管理员)
         if (authUser.isAdmin()) {
-            // 明确禁止普通管理员修改任何人的角色
+            // 这里的检查是多余的，因为我们在方法开始就已经检查了，但为了安全保险起见，可以保留
             if (!authUser.isSuperAdmin() && updatedInfo.getRole() != null) {
                 throw new BusinessException("-6", "无权限修改用户角色");
             }
