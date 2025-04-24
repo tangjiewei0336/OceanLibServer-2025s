@@ -78,6 +78,8 @@ public class UserInfoServiceImpl {
             throw new BusinessException("-5", "无权限修改超级管理员信息");
         }
 
+        UserExtraEntity tempUserExtraEntity = userEntity.getUserExtraEntity();
+
         // 超级管理员特有权限
         if (authUser.isSuperAdmin()) {
             if (updatedInfo.getRole() != null) {
@@ -123,7 +125,12 @@ public class UserInfoServiceImpl {
             }
 
             UserExtraEntity updateInfoExtraEntity = updatedInfo.getUserExtraEntity();
-            UserExtraEntity tempUserExtraEntity = userEntity.getUserExtraEntity();
+
+            if (tempUserExtraEntity == null) {
+                tempUserExtraEntity = new UserExtraEntity();
+                tempUserExtraEntity.setUsername(userEntity.getUsername());
+                userEntity.setUserExtraEntity(tempUserExtraEntity);
+            }
 
             if (tempUserExtraEntity == null) {
                 tempUserExtraEntity = new UserExtraEntity();
@@ -155,6 +162,9 @@ public class UserInfoServiceImpl {
 
         // 更新用户信息到数据库
         userService.updateById(userEntity);
+        userExtraService.saveOrUpdate(tempUserExtraEntity);
+
+        // userExtraService.updateById(tempUserExtraEntity);
         return userEntity;
     }
 
