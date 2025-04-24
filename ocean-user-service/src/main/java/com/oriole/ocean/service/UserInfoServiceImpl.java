@@ -139,11 +139,6 @@ public class UserInfoServiceImpl {
                 userEntity.setUserExtraEntity(tempUserExtraEntity);
             }
 
-            if (tempUserExtraEntity == null) {
-                tempUserExtraEntity = new UserExtraEntity();
-                userEntity.setUserExtraEntity(tempUserExtraEntity);
-            }
-
             if (updateInfoExtraEntity != null) {
                 if (updateInfoExtraEntity.getCollege() != null) {
                     tempUserExtraEntity.setCollege(updateInfoExtraEntity.getCollege());

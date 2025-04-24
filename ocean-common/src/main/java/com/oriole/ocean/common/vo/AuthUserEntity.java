@@ -25,7 +25,7 @@ public class AuthUserEntity implements java.io.Serializable {
     }
 
     public Boolean isSuperAdmin() {
-        return role.equals("SUPERADMIN") || isAdmin();
+        return role.equals("SUPERADMIN");
     }
 
     public String getAllowOperationUsername(String username){
