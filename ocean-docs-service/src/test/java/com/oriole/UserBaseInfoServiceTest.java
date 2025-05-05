@@ -1,10 +1,11 @@
 package com.oriole;
 
-import org.junit.jupiter.api.Test;
+import com.oriole.ocean.common.po.mysql.UserEntity;
+import com.oriole.ocean.common.vo.AuthUserEntity;
+import org.testng.annotations.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
