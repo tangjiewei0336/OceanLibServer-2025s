@@ -102,6 +102,12 @@ public class QuestionController {
         return ResponseEntity.ok(result);
     }
 
+    @ApiOperation(value = "获取最近浏览的问题", nickname = "recentlyViewedGet", notes = "获取最近浏览的问题列表。", response = MsgEntity.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "返回最近浏览的问题列表", response = MsgEntity.class),
+            @ApiResponse(code = 401, message = "未授权", response = Object.class),
+            @ApiResponse(code = 500, message = "服务器内部错误", response = Object.class)})
+    @GetMapping(value = "/recentlyViewed", produces = {"application/json"})
     public ResponseEntity<MsgEntity<List<QuestionEntity>>> getRecentlyViewedQuestions(@AuthUser AuthUserEntity authUser) {
         String username = authUser.getUsername();
         UserBehaviorEntity UserBehaviorEntityQuery = new UserBehaviorEntity(null, MainType.QUESTION, username, BehaviorType.DO_READ);
@@ -114,6 +120,24 @@ public class QuestionController {
             questions = questionService.getQuestionByIds(fileIDs);
         }
         MsgEntity<List<QuestionEntity>> result = new MsgEntity<>("SUCCESS", "1", questions);
+        return ResponseEntity.ok(result);
+    }
+
+    @ApiOperation(value = "获取问题详情", nickname = "getQuestionDetails", notes = "获取指定问题的详细信息。", response = MsgEntity.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "返回问题详情", response = MsgEntity.class),
+            @ApiResponse(code = 401, message = "未授权", response = Object.class),
+            @ApiResponse(code = 500, message = "服务器内部错误", response = Object.class)})
+    @GetMapping(value = "/details", produces = {"application/json"})
+    public ResponseEntity<MsgEntity<QuestionEntity>> getQuestionDetails(
+            @AuthUser AuthUserEntity authUser,
+            @NotNull @ApiParam(value = "问题的 ID", required = true) @Valid @RequestParam(value = "questionId", required = true) Integer questionId) {
+
+        QuestionEntity question = questionService.getQuestionById(questionId);
+        if (question == null) {
+            return ResponseEntity.status(404).body(new MsgEntity<>("ERROR", "Question not found", null));
+        }
+        MsgEntity<QuestionEntity> result = new MsgEntity<>("SUCCESS", "1", question);
         return ResponseEntity.ok(result);
     }
 }
