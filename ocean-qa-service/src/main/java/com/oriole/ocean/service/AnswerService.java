@@ -5,11 +5,11 @@ import com.oriole.ocean.common.vo.MsgEntity;
 import org.springframework.data.domain.Page;
 
 public interface AnswerService {
-    MsgEntity<String> submitAnswer(String questionId, String content, String userId);
+    MsgEntity<Integer> submitAnswer(Integer questionId, String content, String userId);
 
-    MsgEntity<Page<AnswerEntity>> getAnswersByQuestionId(String questionId, int page, int pageSize);
+    MsgEntity<Page<AnswerEntity>> getAnswersByQuestionId(Integer questionId, int page, int pageSize);
 
-    MsgEntity<AnswerEntity> updateAnswer(String answerId, String content, String userId);
+    MsgEntity<AnswerEntity> updateAnswer(Integer answerId, String content, String userId);
 
-    MsgEntity<String> deleteAnswer(String answerId, String userId);
+    MsgEntity<String> deleteAnswer(Integer answerId, String userId);
 }

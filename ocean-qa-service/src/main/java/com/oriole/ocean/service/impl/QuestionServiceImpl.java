@@ -13,7 +13,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class QuestionServiceImpl implements QuestionService {
@@ -26,7 +28,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public MsgEntity<String> createQuestion(String title, String content, String userId) {
+    public MsgEntity<Integer> createQuestion(String title, String content, String userId) {
         QuestionEntity question = new QuestionEntity();
         question.setUserId(userId);
         question.setTitle(title != null ? title : "");
@@ -46,7 +48,28 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public MsgEntity<QuestionEntity> updateQuestion(String questionId, String title, String content,
+    public QuestionEntity getQuestionById(Integer questionId) {
+        QuestionEntity question = questionRepository.findByIdAndIsDeletedFalse(questionId);
+        if (question == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Question not found");
+        }
+        return question;
+    }
+
+    @Override
+    public List<QuestionEntity> getQuestionByIds(List<Integer> questionIds) {
+        if (questionIds == null || questionIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<QuestionEntity> questions = questionRepository.findByIdInAndIsDeletedFalse(questionIds);
+        if (questions == null || questions.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No questions found for the provided IDs");
+        }
+        return questions;
+    }
+
+    @Override
+    public MsgEntity<QuestionEntity> updateQuestion(Integer questionId, String title, String content,
                                                     Boolean isPost, Boolean isHide, Integer setReward, String userId) {
         QuestionEntity question = questionRepository.findByIdAndIsDeletedFalse(questionId);
         if (question == null) {
@@ -91,7 +114,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public MsgEntity<String> deleteQuestion(String questionId, String userId) {
+    public MsgEntity<String> deleteQuestion(Integer questionId, String userId) {
         QuestionEntity question = questionRepository.findByIdAndIsDeletedFalse(questionId);
         if (question == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Question not found");

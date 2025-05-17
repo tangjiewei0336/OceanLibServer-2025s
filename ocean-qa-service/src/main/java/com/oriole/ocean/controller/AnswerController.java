@@ -2,6 +2,8 @@ package com.oriole.ocean.controller;
 
 import com.oriole.ocean.common.auth.AuthUser;
 import com.oriole.ocean.common.po.mongo.AnswerEntity;
+import com.oriole.ocean.common.service.NotifyService;
+import com.oriole.ocean.common.service.UserBehaviorService;
 import com.oriole.ocean.common.vo.AuthUserEntity;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.service.AnswerService;
@@ -10,17 +12,23 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import jakarta.validation.Valid;
+import javax.validation.Valid;
+
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/answer")
+@RequestMapping("/qaService/answer")
 public class AnswerController {
 
     private final AnswerService answerService;
+    @DubboReference
+    UserBehaviorService userBehaviorService;
+    @DubboReference
+    NotifyService notifyService;
 
     public AnswerController(AnswerService answerService) {
         this.answerService = answerService;
@@ -32,12 +40,12 @@ public class AnswerController {
             @ApiResponse(code = 401, message = "未授权", response = Object.class),
             @ApiResponse(code = 500, message = "服务器内部错误", response = Object.class)})
     @PostMapping(value = "/submit", produces = {"application/json"}, consumes = {"multipart/form-data"})
-    public ResponseEntity<MsgEntity<String>> submitAnswer(
+    public ResponseEntity<MsgEntity<Integer>> submitAnswer(
             @AuthUser AuthUserEntity authUser,
-            @NotNull @ApiParam(value = "回答所属的问题 ID", required = true) @Valid @RequestParam(value = "questionId", required = true) String questionId,
+            @NotNull @ApiParam(value = "回答所属的问题 ID", required = true) @Valid @RequestParam(value = "questionId", required = true) Integer questionId,
             @ApiParam(value = "") @RequestPart(value = "answer", required = false) String answer) {
 
-        MsgEntity<String> result = answerService.submitAnswer(questionId, answer, authUser.getUsername());
+        MsgEntity<Integer> result = answerService.submitAnswer(questionId, answer, authUser.getUsername());
         return ResponseEntity.ok(result);
     }
 
@@ -49,7 +57,7 @@ public class AnswerController {
     @GetMapping(value = "/list", produces = {"application/json"})
     public ResponseEntity<MsgEntity<Page<AnswerEntity>>> listGetAnswer(
             @AuthUser AuthUserEntity authUser,
-            @NotNull @ApiParam(value = "问题的 ID", required = true) @Valid @RequestParam(value = "questionId", required = true) String questionId,
+            @NotNull @ApiParam(value = "问题的 ID", required = true) @Valid @RequestParam(value = "questionId", required = true) Integer questionId,
             @NotNull @ApiParam(value = "页码", required = true) @Valid @RequestParam(value = "page", required = true) Integer page,
             @NotNull @ApiParam(value = "每页显示的回答数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
 
@@ -65,7 +73,7 @@ public class AnswerController {
     @PutMapping(value = "/update", produces = {"application/json"})
     public ResponseEntity<MsgEntity<AnswerEntity>> updateAnswer(
             @AuthUser AuthUserEntity authUser,
-            @NotNull @ApiParam(value = "要修改的回答 ID", required = true) @Valid @RequestParam(value = "answerId", required = true) String answerId,
+            @NotNull @ApiParam(value = "要修改的回答 ID", required = true) @Valid @RequestParam(value = "answerId", required = true) Integer answerId,
             @NotNull @ApiParam(value = "修改后的回答内容", required = true) @Valid @RequestParam(value = "content", required = true) String content) {
 
         MsgEntity<AnswerEntity> result = answerService.updateAnswer(answerId, content, authUser.getUsername());
@@ -80,7 +88,7 @@ public class AnswerController {
     @DeleteMapping(value = "/delete", produces = {"application/json"})
     public ResponseEntity<MsgEntity<String>> deleteAnswer(
             @AuthUser AuthUserEntity authUser,
-            @NotNull @ApiParam(value = "要删除的回答 ID", required = true) @Valid @RequestParam(value = "answerId", required = true) String answerId) {
+            @NotNull @ApiParam(value = "要删除的回答 ID", required = true) @Valid @RequestParam(value = "answerId", required = true) Integer answerId) {
 
         MsgEntity<String> result = answerService.deleteAnswer(answerId, authUser.getUsername());
         return ResponseEntity.ok(result);

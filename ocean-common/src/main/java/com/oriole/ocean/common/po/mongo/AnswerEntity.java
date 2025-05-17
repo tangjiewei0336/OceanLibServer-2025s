@@ -11,10 +11,10 @@ import java.util.Date;
 @Document(collection = "answers")
 public class AnswerEntity {
   @Id
-  private String id;
+  private Integer id;
 
   @Field("question_id")
-  private String questionId;
+  private Integer questionId;
 
   @Field("user_id")
   private String userId;

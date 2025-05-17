@@ -1,7 +1,12 @@
 package com.oriole.ocean.controller;
 
 import com.oriole.ocean.common.auth.AuthUser;
+import com.oriole.ocean.common.enumerate.BehaviorType;
+import com.oriole.ocean.common.enumerate.MainType;
 import com.oriole.ocean.common.po.mongo.QuestionEntity;
+import com.oriole.ocean.common.po.mongo.UserBehaviorEntity;
+import com.oriole.ocean.common.po.mysql.FileEntity;
+import com.oriole.ocean.common.service.UserBehaviorService;
 import com.oriole.ocean.common.vo.AuthUserEntity;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.service.QuestionService;
@@ -10,16 +15,24 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import jakarta.validation.Valid;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
-@RequestMapping("/question")
+@RequestMapping("/qaService/question")
 public class QuestionController {
 
     private final QuestionService questionService;
+
+    @DubboReference
+    UserBehaviorService userBehaviorService;
 
     public QuestionController(QuestionService questionService) {
         this.questionService = questionService;
@@ -30,13 +43,13 @@ public class QuestionController {
             @ApiResponse(code = 200, message = "提问成功，返回操作提示信息", response = MsgEntity.class),
             @ApiResponse(code = 401, message = "未授权", response = Object.class),
             @ApiResponse(code = 500, message = "服务器内部错误", response = Object.class)})
-    @PostMapping(value = "/new", produces = {"application/json"}, consumes = {"multipart/form-data"})
-    public ResponseEntity<MsgEntity<String>> newPost(
+    @PostMapping(value = "/new", produces = {"application/json"})
+    public ResponseEntity<MsgEntity<Integer>> newPost(
             @AuthUser AuthUserEntity authUser,
-            @ApiParam(value = "") @RequestPart(value = "title", required = false) String title,
-            @ApiParam(value = "") @RequestPart(value = "content", required = false) String content) {
+            @ApiParam(value = "") @RequestParam(value = "title", required = false) String title,
+            @ApiParam(value = "") @RequestParam(value = "content", required = false) String content) {
 
-        MsgEntity<String> result = questionService.createQuestion(title, content, authUser.getUsername());
+        MsgEntity<Integer> result = questionService.createQuestion(title, content, authUser.getUsername());
         return ResponseEntity.ok(result);
     }
 
@@ -60,10 +73,10 @@ public class QuestionController {
             @ApiResponse(code = 200, message = "问题修改成功，返回更新后的问题信息", response = MsgEntity.class),
             @ApiResponse(code = 401, message = "未授权", response = Object.class),
             @ApiResponse(code = 500, message = "服务器内部错误", response = Object.class)})
-    @PutMapping(value = "/update", produces = {"application/json"}, consumes = {"multipart/form-data"})
+    @PutMapping(value = "/update", produces = {"application/json"})
     public ResponseEntity<MsgEntity<QuestionEntity>> updatePut(
             @AuthUser AuthUserEntity authUser,
-            @NotNull @ApiParam(value = "要修改的问题 ID", required = true) @Valid @RequestParam(value = "questionId", required = true) String questionId,
+            @NotNull @ApiParam(value = "要修改的问题 ID", required = true) @Valid @RequestParam(value = "questionId", required = true) Integer questionId,
             @ApiParam(value = "是否转换为发布状态，isPost和isHide中最多只能有一个为True") @Valid @RequestParam(value = "isPost", required = false) Boolean isPost,
             @ApiParam(value = "是否转换为草稿状态，isPost和isHide中最多只能有一个为True") @Valid @RequestParam(value = "isHide", required = false) Boolean isHide,
             @ApiParam(value = "") @Valid @RequestParam(value = "setReward", required = false) Integer setReward,
@@ -80,12 +93,27 @@ public class QuestionController {
             @ApiResponse(code = 200, message = "问题删除成功，返回操作提示信息", response = MsgEntity.class),
             @ApiResponse(code = 401, message = "未授权", response = Object.class),
             @ApiResponse(code = 500, message = "服务器内部错误", response = Object.class)})
-    @DeleteMapping(value = "/delete", produces = {"application/json"}, consumes = {"multipart/form-data"})
+    @DeleteMapping(value = "/delete", produces = {"application/json"})
     public ResponseEntity<MsgEntity<String>> deleteDelete(
             @AuthUser AuthUserEntity authUser,
-            @NotNull @ApiParam(value = "要删除的问题 ID", required = true) @Valid @RequestParam(value = "questionId", required = true) String questionId) {
+            @NotNull @ApiParam(value = "要删除的问题 ID", required = true) @Valid @RequestParam(value = "questionId", required = true) Integer questionId) {
 
         MsgEntity<String> result = questionService.deleteQuestion(questionId, authUser.getUsername());
+        return ResponseEntity.ok(result);
+    }
+
+    public ResponseEntity<MsgEntity<List<QuestionEntity>>> getRecentlyViewedQuestions(@AuthUser AuthUserEntity authUser) {
+        String username = authUser.getUsername();
+        UserBehaviorEntity UserBehaviorEntityQuery = new UserBehaviorEntity(null, MainType.QUESTION, username, BehaviorType.DO_READ);
+        List<UserBehaviorEntity> userBehaviorEntities = userBehaviorService.findAllBehaviorRecords(UserBehaviorEntityQuery);
+
+        List<Integer> fileIDs = userBehaviorEntities.stream().map(UserBehaviorEntity::getBindID).distinct().collect(Collectors.toList());
+
+        List<QuestionEntity> questions = new ArrayList<>();
+        if (fileIDs.size() > 0) {
+            questions = questionService.getQuestionByIds(fileIDs);
+        }
+        MsgEntity<List<QuestionEntity>> result = new MsgEntity<>("SUCCESS", "1", questions);
         return ResponseEntity.ok(result);
     }
 }

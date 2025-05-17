@@ -26,7 +26,7 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public MsgEntity<String> submitAnswer(String questionId, String content, String userId) {
+    public MsgEntity<Integer> submitAnswer(Integer questionId, String content, String userId) {
         AnswerEntity answer = new AnswerEntity();
         answer.setQuestionId(questionId);
         answer.setUserId(userId);
@@ -40,14 +40,14 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public MsgEntity<Page<AnswerEntity>> getAnswersByQuestionId(String questionId, int page, int pageSize) {
+    public MsgEntity<Page<AnswerEntity>> getAnswersByQuestionId(Integer questionId, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
         Page<AnswerEntity> answers = answerRepository.findByQuestionIdAndIsDeletedFalse(questionId, pageable);
         return new MsgEntity<>("SUCCESS", "Answers retrieved successfully", answers);
     }
 
     @Override
-    public MsgEntity<AnswerEntity> updateAnswer(String answerId, String content, String userId) {
+    public MsgEntity<AnswerEntity> updateAnswer(Integer answerId, String content, String userId) {
         AnswerEntity answer = answerRepository.findByIdAndIsDeletedFalse(answerId);
         if (answer == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Answer not found");
@@ -66,7 +66,7 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public MsgEntity<String> deleteAnswer(String answerId, String userId) {
+    public MsgEntity<String> deleteAnswer(Integer answerId, String userId) {
         AnswerEntity answer = answerRepository.findByIdAndIsDeletedFalse(answerId);
         if (answer == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Answer not found");

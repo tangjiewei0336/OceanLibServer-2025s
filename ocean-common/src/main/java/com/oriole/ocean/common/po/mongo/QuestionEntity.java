@@ -12,7 +12,7 @@ import java.util.List;
 @Document(collection = "questions")
 public class QuestionEntity {
     @Id
-    private String id;
+    private Integer id;
 
     @Field("user_id")
     private String userId;
