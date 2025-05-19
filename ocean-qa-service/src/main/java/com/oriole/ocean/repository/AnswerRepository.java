@@ -12,5 +12,7 @@ public interface AnswerRepository extends MongoRepository<AnswerEntity, String> 
 
     AnswerEntity findByIdAndIsDeletedFalse(Integer id);
 
+    Page<AnswerEntity> findByUserIdAndIsDeletedFalse(String userId, Pageable pageable);
+
     List<AnswerEntity> findByUserIdAndIsDeletedFalse(String userId);
 }

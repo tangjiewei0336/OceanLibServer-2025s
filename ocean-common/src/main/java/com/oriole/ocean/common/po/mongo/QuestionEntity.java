@@ -49,4 +49,7 @@ public class QuestionEntity {
 
     @Field("attachment_ids")
     private List<String> attachmentIds;
+
+    // 非持久化字段
+    private boolean isLiked = false;
 }

@@ -3,7 +3,9 @@ package com.oriole.ocean.service.impl;
 import com.oriole.ocean.common.po.mongo.AnswerEntity;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.repository.AnswerRepository;
+import com.oriole.ocean.repository.QuestionRepository;
 import com.oriole.ocean.service.AnswerService;
+import com.oriole.ocean.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +21,9 @@ import java.util.Date;
 public class AnswerServiceImpl implements AnswerService {
 
     private final AnswerRepository answerRepository;
+
+    @Autowired
+    private QuestionService questionService;
 
     @Autowired
     public AnswerServiceImpl(AnswerRepository answerRepository) {
@@ -81,5 +86,21 @@ public class AnswerServiceImpl implements AnswerService {
         answerRepository.save(answer);
 
         return new MsgEntity<>("SUCCESS", "Answer deleted successfully", null);
+    }
+
+    @Override
+    public MsgEntity<Page<AnswerEntity>> getAnswersByUserId(String username, Integer page, Integer pageSize) {
+
+        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
+        Page<AnswerEntity> answers = answerRepository.findByUserIdAndIsDeletedFalse(username, pageable);
+        if (answers == null || answers.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No answers found for the provided user ID");
+        }
+        for (AnswerEntity answer : answers) {
+            // Assuming you have a method to get the question by ID
+            answer.setQuestion(questionService.getQuestionById(answer.getQuestionId()));
+        }
+
+        return new MsgEntity<>("SUCCESS", "Answers retrieved successfully", answers);
     }
 }

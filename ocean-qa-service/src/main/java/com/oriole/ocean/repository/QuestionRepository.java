@@ -17,4 +17,6 @@ public interface QuestionRepository extends MongoRepository<QuestionEntity, Stri
     long countByUserIdAndIsDeletedFalse(String userId);
 
     List<QuestionEntity> findByIdInAndIsDeletedFalse(List<Integer> questionIds);
+
+    Page<QuestionEntity> findByUserId(String username, Pageable pageable);
 }

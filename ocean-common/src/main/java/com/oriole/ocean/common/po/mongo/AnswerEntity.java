@@ -35,4 +35,8 @@ public class AnswerEntity {
 
   @Field("comment_count")
   private Integer commentCount = 0;
+
+  // 非持久化字段
+
+  private QuestionEntity question;
 }

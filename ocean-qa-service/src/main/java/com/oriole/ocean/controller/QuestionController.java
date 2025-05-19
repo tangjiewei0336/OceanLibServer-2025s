@@ -5,17 +5,19 @@ import com.oriole.ocean.common.enumerate.BehaviorType;
 import com.oriole.ocean.common.enumerate.MainType;
 import com.oriole.ocean.common.po.mongo.QuestionEntity;
 import com.oriole.ocean.common.po.mongo.UserBehaviorEntity;
-import com.oriole.ocean.common.po.mysql.FileEntity;
 import com.oriole.ocean.common.service.UserBehaviorService;
 import com.oriole.ocean.common.vo.AuthUserEntity;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.service.QuestionService;
+import com.oriole.ocean.service.impl.QaESearchServiceImpl;
 import com.sun.istack.internal.NotNull;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +35,10 @@ public class QuestionController {
 
     @DubboReference
     UserBehaviorService userBehaviorService;
+
+
+    @Autowired
+    QaESearchServiceImpl eSearchService;
 
     public QuestionController(QuestionService questionService) {
         this.questionService = questionService;
@@ -61,10 +67,18 @@ public class QuestionController {
     @GetMapping(value = "/list", produces = {"application/json"})
     public ResponseEntity<MsgEntity<Page<QuestionEntity>>> listGet(
             @AuthUser AuthUserEntity authUser,
+            @NotNull @ApiParam(value = "查询用户或所有", required = false) @Valid @RequestParam(value = "username", required = false) String username,
+            @NotNull @ApiParam(value = "排序方式，0:时间更新 1:热度", required = false) @Valid @RequestParam(value = "sort", required = false) Integer sort,
             @NotNull @ApiParam(value = "页码", required = true) @Valid @RequestParam(value = "page", required = true) Integer page,
             @NotNull @ApiParam(value = "每页显示的问题数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
+        MsgEntity<Page<QuestionEntity>> result = null;
+        if(sort == null) {
+            sort = 0;
+        }
 
-        MsgEntity<Page<QuestionEntity>> result = questionService.getQuestions(page, pageSize);
+        if (result == null) {
+            return ResponseEntity.badRequest().body(new MsgEntity<>("ERROR", "Failed to retrieve questions", null));
+        }
         return ResponseEntity.ok(result);
     }
 
@@ -139,5 +153,32 @@ public class QuestionController {
         }
         MsgEntity<QuestionEntity> result = new MsgEntity<>("SUCCESS", "1", question);
         return ResponseEntity.ok(result);
+    }
+
+    @ApiOperation(value = "搜索问题", nickname = "searchQuestions", notes = "根据关键词搜索问题。", response = MsgEntity.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "返回搜索结果", response = MsgEntity.class),
+            @ApiResponse(code = 401, message = "未授权", response = Object.class),
+            @ApiResponse(code = 500, message = "服务器内部错误", response = Object.class)})
+    @GetMapping(value = "/search", produces = {"application/json"})
+    public ResponseEntity<SearchHits<QuestionEntity>> searchQuestions(
+            @AuthUser AuthUserEntity authUser,
+            @NotNull @ApiParam(value = "搜索关键词", required = true) @Valid @RequestParam(value = "keyword", required = true) String keyword,
+            @NotNull @ApiParam(value = "页码", required = true) @Valid @RequestParam(value = "page", required = true) Integer page,
+            @NotNull @ApiParam(value = "每页显示的问题数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
+
+        SearchHits<QuestionEntity> searchHits = eSearchService.searchQuestions(keyword, page, pageSize);
+        return ResponseEntity.ok(searchHits);
+    }
+
+    @ApiOperation(value = "获取问题标题建议", nickname = "suggestTitle", notes = "根据关键词获取问题标题建议。", response = MsgEntity.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "返回标题建议", response = MsgEntity.class),
+            @ApiResponse(code = 401, message = "未授权", response = Object.class),
+            @ApiResponse(code = 500, message = "服务器内部错误", response = Object.class)})
+    @GetMapping(value = "/suggestTitle", produces = {"application/json"})
+    public MsgEntity<ArrayList<String>> suggestTitle(@RequestParam String keyword, @RequestParam Integer rows) {
+        ArrayList<String> suggests = eSearchService.suggestTitle(keyword, rows);
+        return new MsgEntity<>("SUCCESS", "1", suggests);
     }
 }

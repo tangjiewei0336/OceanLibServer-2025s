@@ -4,6 +4,7 @@ import com.oriole.ocean.common.po.mongo.QuestionEntity;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.repository.QuestionRepository;
 import com.oriole.ocean.service.QuestionService;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +23,8 @@ public class QuestionServiceImpl implements QuestionService {
 
     private final QuestionRepository questionRepository;
 
+
+
     @Autowired
     public QuestionServiceImpl(QuestionRepository questionRepository) {
         this.questionRepository = questionRepository;
@@ -38,6 +41,21 @@ public class QuestionServiceImpl implements QuestionService {
 
         QuestionEntity savedQuestion = questionRepository.save(question);
         return new MsgEntity<>("SUCCESS", "Question created successfully", savedQuestion.getId());
+    }
+
+    @Override
+    public MsgEntity<Page<QuestionEntity>> getQuestions(int page, int pageSize, String username, int sortMethod, Boolean includeDeleted) {
+        // 当username为空时，展示所有的问题；不为空时则展示这个人提出的问题。 默认按照时间更新顺序。
+        // sortMethod: 0:时间更新 1:热度
+
+        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
+        Page<QuestionEntity> questions;
+        if (username != null && !username.isEmpty()) {
+            questions = questionRepository.findByUserIdAndIsDeletedFalse(username, pageable);
+        } else {
+            questions = questionRepository.findByUserId(username, pageable);
+        }
+
     }
 
     @Override
