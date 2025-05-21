@@ -1,3 +1,5 @@
+server:
+  port: 8086
 spring:
   mvc:
     pathmatch:
