@@ -27,7 +27,7 @@ spring:
         - id: docs
           uri: lb://ocean-docs-service
           predicates:
-            - Path=/docClassificationService/**, /docFunctionService/**, /docInfoService/**, /DocSearchController/**
+            - Path=/docClassificationService/**, /docFunctionService/**, /docInfoService/**, /docSearchService/**
         - id: comment
           uri: lb://ocean-comment-service
           predicates:
@@ -40,6 +40,10 @@ spring:
           uri: lb://ocean-notify-service
           predicates:
             - Path=/notify/**
+        - id: note
+          uri: lb://ocean-note-service
+          predicates:
+              - Path=/noteService/**
 auth:
   login:
     token:
