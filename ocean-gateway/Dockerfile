@@ -1,0 +1,10 @@
+FROM openjdk:8-jdk-alpine
+
+# 将jar包复制到镜像中
+COPY target/ocean-gateway-1.0-SNAPSHOT.jar /app/ocean-gateway-1.0-SNAPSHOT.jar
+
+# 设置工作目录
+WORKDIR /app
+
+# 运行jar包，使用java命令启动
+ENTRYPOINT ["java","-Dspring.profiles.active=dev","-jar","ocean-gateway-1.0-SNAPSHOT.jar"]

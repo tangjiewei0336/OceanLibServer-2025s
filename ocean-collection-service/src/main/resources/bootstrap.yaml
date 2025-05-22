@@ -14,10 +14,10 @@ spring:
         file-extension: yaml
         group: DEFAULT_GROUP
       discovery:
-        server-addr: host.docker.internal:8848
+        server-addr: ocean-nacos:8848
 dubbo:
   registry:
-    address: nacos://host.docker.internal:8848
+    address: nacos://ocean-nacos:8848
     parameters:
       namespace: 2a9c5897-b4a7-4825-9c0c-fabcf61a5863
       group: dubbo

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocean-gateway
+  labels:
+    app: ocean-gateway
+spec:
+  replicas: 2  # 可根据需要调整副本数
+  selector:
+    matchLabels:
+      app: ocean-gateway
+  template:
+    metadata:
+      labels:
+        app: ocean-gateway
+    spec:
+      containers:
+        - name: ocean-gateway
+          image: boyuzhu4216/ocean-gateway:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080  # 假设服务监听 8080，如果不同请调整
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: dev
+          command: ["java"]
+          args: ["-jar", "ocean-gateway-1.0-SNAPSHOT.jar", "-Dspring.profiles.active=dev"]
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ocean-gateway
+spec:
+  selector:
+    app: ocean-gateway
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 8080
