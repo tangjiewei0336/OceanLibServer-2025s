@@ -13,5 +13,5 @@ public class NoteTypeEntity implements java.io.Serializable {
     private Integer typeID;
     private String typeName;
     private String typeIcon;
-    private String cardColor;
+    // private String cardColor;
 }
