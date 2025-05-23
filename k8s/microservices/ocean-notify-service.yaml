@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocean-notify-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ocean-notify-service
+  template:
+    metadata:
+      labels:
+        app: ocean-notify-service
+    spec:
+      containers:
+        - name: ocean-notify-service
+          image: boyuzhu4216/ocean-notify-service:v1.0
+          ports:
+            - containerPort: 8087
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ocean-notify-service
+spec:
+  selector:
+    app: ocean-notify-service
+  ports:
+    - port: 8087
+      targetPort: 8087
+  type: ClusterIP

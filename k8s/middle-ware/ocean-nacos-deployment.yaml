@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocean-nacos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nacos
+  template:
+    metadata:
+      labels:
+        app: nacos
+    spec:
+      containers:
+        - name: nacos
+          image: boyuzhu4216/ocean-nacos:v1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8848
+          command: ["sh", "-c"]
+          args: ["sh bin/startup.sh -m standalone && tail -f /dev/null"]
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ocean-nacos
+spec:
+  type: ClusterIP
+  selector:
+    app: nacos
+  ports:
+    - port: 8848
+      name: server
+      targetPort: 8848
+    - port: 9848
+      name: client-rpc
+      targetPort: 9848
+    - port: 9849
+      name: raft-rpc
+      targetPort: 9849
+    - port: 7848
+      name: old-raft-rpc
+      targetPort: 7848

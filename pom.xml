@@ -11,7 +11,6 @@
     <module>ocean-gateway</module>
     <module>ocean-user-behavior-service</module>
     <module>ocean-docs-service</module>
-    <module>ocean-docs-file-service</module>
     <module>ocean-collection-service</module>
     <module>ocean-comment-service</module>
     <module>ocean-notify-service</module>

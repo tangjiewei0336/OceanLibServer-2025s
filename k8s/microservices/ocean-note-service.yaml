@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocean-note-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ocean-note-service
+  template:
+    metadata:
+      labels:
+        app: ocean-note-service
+    spec:
+      containers:
+        - name: ocean-note-service
+          image: boyuzhu4216/ocean-note-service:v1.0
+          ports:
+            - containerPort: 8086
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ocean-note-service
+spec:
+  selector:
+    app: ocean-note-service
+  ports:
+    - port: 8086
+      targetPort: 8086
+  type: ClusterIP

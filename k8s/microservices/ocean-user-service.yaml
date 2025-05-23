@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ocean-user-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ocean-user-service
+  template:
+    metadata:
+      labels:
+        app: ocean-user-service
+    spec:
+      containers:
+        - name: ocean-user-service
+          image: boyuzhu4216/ocean-user-service:v1.0
+          ports:
+            - containerPort: 8089
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ocean-user-service
+spec:
+  selector:
+    app: ocean-user-service
+  ports:
+    - port: 8089
+      targetPort: 8089
+  type: ClusterIP

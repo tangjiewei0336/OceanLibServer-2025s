@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ocean-collection-service
-  labels:
-    app: ocean-collection-service
 spec:
   replicas: 1
   selector:
@@ -16,14 +14,13 @@ spec:
     spec:
       containers:
         - name: ocean-collection-service
-          image: ocean-collection-service:v1  # ✅ 替换为你的实际镜像名
-          imagePullPolicy: IfNotPresent
+          image: boyuzhu4216/ocean-collection-service:v1.0
+          imagePullPolicy: Always
           ports:
             - containerPort: 8081
-          command: ["java"]
-          args: ["-jar", "ocean-collection-service-1.0-SNAPSHOT.jar", "-Dspring.profiles.active=dev"]
 
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -31,8 +28,7 @@ metadata:
 spec:
   selector:
     app: ocean-collection-service
-  type: NodePort
   ports:
-    - port: 80
+    - port: 8081
       targetPort: 8081
-      nodePort: 30081  # ✅ 集群外通过这个端口访问，范围为 30000~32767
+  type: ClusterIP
