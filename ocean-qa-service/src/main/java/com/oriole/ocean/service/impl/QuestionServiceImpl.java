@@ -2,9 +2,9 @@ package com.oriole.ocean.service.impl;
 
 import com.oriole.ocean.common.po.mongo.QuestionEntity;
 import com.oriole.ocean.common.vo.MsgEntity;
-import com.oriole.ocean.repository.QuestionRepository;
+import com.oriole.ocean.repository.MongoQuestionRepository;
 import com.oriole.ocean.service.QuestionService;
-import org.apache.dubbo.config.annotation.DubboReference;
+import com.oriole.ocean.service.SequenceGeneratorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -21,13 +21,15 @@ import java.util.List;
 @Service
 public class QuestionServiceImpl implements QuestionService {
 
-    private final QuestionRepository questionRepository;
+    private final MongoQuestionRepository mongoQuestionRepository;
 
+    @Autowired
+    private SequenceGeneratorService sequenceGeneratorService;
 
 
     @Autowired
-    public QuestionServiceImpl(QuestionRepository questionRepository) {
-        this.questionRepository = questionRepository;
+    public QuestionServiceImpl(MongoQuestionRepository mongoQuestionRepository) {
+        this.mongoQuestionRepository = mongoQuestionRepository;
     }
 
     @Override
@@ -38,36 +40,63 @@ public class QuestionServiceImpl implements QuestionService {
         question.setContent(content != null ? content : "");
         question.setCreateTime(new Date());
         question.setUpdateTime(new Date());
+        question.setBindId(sequenceGeneratorService.getNextSequence("questions"));
 
-        QuestionEntity savedQuestion = questionRepository.save(question);
-        return new MsgEntity<>("SUCCESS", "Question created successfully", savedQuestion.getId());
+        QuestionEntity savedQuestion = mongoQuestionRepository.save(question);
+        return new MsgEntity<>("SUCCESS", "Question created successfully", savedQuestion.getBindId());
     }
 
     @Override
-    public MsgEntity<Page<QuestionEntity>> getQuestions(int page, int pageSize, String username, int sortMethod, Boolean includeDeleted) {
+    public MsgEntity<Page<QuestionEntity>> getQuestions(int page, int pageSize, String username, Integer sortMethod, Boolean includeDeleted) {
         // 当username为空时，展示所有的问题；不为空时则展示这个人提出的问题。 默认按照时间更新顺序。
         // sortMethod: 0:时间更新 1:热度
 
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
         Page<QuestionEntity> questions;
         if (username != null && !username.isEmpty()) {
-            questions = questionRepository.findByUserIdAndIsDeletedFalse(username, pageable);
+            questions = mongoQuestionRepository.findByUserIdAndIsDeletedFalse(username, pageable);
         } else {
-            questions = questionRepository.findByUserId(username, pageable);
+            questions = mongoQuestionRepository.findByUserId(username, pageable);
         }
 
+        if (questions == null || questions.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No questions found");
+        }
+        if (includeDeleted != null && includeDeleted) {
+            questions = mongoQuestionRepository.findAll(pageable);
+        } else {
+            questions = mongoQuestionRepository.findByIsDeletedFalse(pageable);
+        }
+        if (sortMethod != null) {
+            switch (sortMethod) {
+                case 0: // 按更新时间排序
+                    pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "updateTime"));
+                    break;
+                case 1: // 按热度排序（假设热度是通过回答数和浏览数计算的）
+                    pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "viewCount", "answerCount"));
+                    break;
+                default:
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid sort method");
+            }
+            questions = mongoQuestionRepository.findByIsDeletedFalse(pageable);
+        }
+        if (questions == null || questions.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No questions found");
+        }
+        return new MsgEntity<>("SUCCESS", "Questions retrieved successfully", questions);
+
     }
 
-    @Override
-    public MsgEntity<Page<QuestionEntity>> getQuestions(int page, int pageSize) {
-        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
-        Page<QuestionEntity> questions = questionRepository.findByIsDeletedFalse(pageable);
-        return new MsgEntity<>("SUCCESS", "Questions retrieved successfully", questions);
-    }
+//    @Override
+//    public MsgEntity<Page<QuestionEntity>> getQuestions(int page, int pageSize) {
+//        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
+//        Page<QuestionEntity> questions = questionRepository.findByIsDeletedFalse(pageable);
+//        return new MsgEntity<>("SUCCESS", "Questions retrieved successfully", questions);
+//    }
 
     @Override
     public QuestionEntity getQuestionById(Integer questionId) {
-        QuestionEntity question = questionRepository.findByIdAndIsDeletedFalse(questionId);
+        QuestionEntity question = mongoQuestionRepository.findByBindIdAndIsDeletedFalse(questionId);
         if (question == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Question not found");
         }
@@ -79,7 +108,7 @@ public class QuestionServiceImpl implements QuestionService {
         if (questionIds == null || questionIds.isEmpty()) {
             return Collections.emptyList();
         }
-        List<QuestionEntity> questions = questionRepository.findByIdInAndIsDeletedFalse(questionIds);
+        List<QuestionEntity> questions = mongoQuestionRepository.findByBindIdInAndIsDeletedFalse(questionIds);
         if (questions == null || questions.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No questions found for the provided IDs");
         }
@@ -89,7 +118,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public MsgEntity<QuestionEntity> updateQuestion(Integer questionId, String title, String content,
                                                     Boolean isPost, Boolean isHide, Integer setReward, String userId) {
-        QuestionEntity question = questionRepository.findByIdAndIsDeletedFalse(questionId);
+        QuestionEntity question = mongoQuestionRepository.findByBindIdAndIsDeletedFalse(questionId);
         if (question == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Question not found");
         }
@@ -126,14 +155,14 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         question.setUpdateTime(new Date());
-        QuestionEntity updatedQuestion = questionRepository.save(question);
+        QuestionEntity updatedQuestion = mongoQuestionRepository.save(question);
 
         return new MsgEntity<>("SUCCESS", "Question updated successfully", updatedQuestion);
     }
 
     @Override
     public MsgEntity<String> deleteQuestion(Integer questionId, String userId) {
-        QuestionEntity question = questionRepository.findByIdAndIsDeletedFalse(questionId);
+        QuestionEntity question = mongoQuestionRepository.findByBindIdAndIsDeletedFalse(questionId);
         if (question == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Question not found");
         }
@@ -144,7 +173,7 @@ public class QuestionServiceImpl implements QuestionService {
 
         question.setIsDeleted(true);
         question.setUpdateTime(new Date());
-        questionRepository.save(question);
+        mongoQuestionRepository.save(question);
 
         return new MsgEntity<>("SUCCESS", "Question deleted successfully", null);
     }

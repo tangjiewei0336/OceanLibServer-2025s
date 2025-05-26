@@ -3,7 +3,6 @@ package com.oriole.ocean.service.impl;
 import com.oriole.ocean.common.po.mongo.AnswerEntity;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.repository.AnswerRepository;
-import com.oriole.ocean.repository.QuestionRepository;
 import com.oriole.ocean.service.AnswerService;
 import com.oriole.ocean.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -161,14 +161,14 @@ public class QuestionController {
             @ApiResponse(code = 401, message = "未授权", response = Object.class),
             @ApiResponse(code = 500, message = "服务器内部错误", response = Object.class)})
     @GetMapping(value = "/search", produces = {"application/json"})
-    public ResponseEntity<SearchHits<QuestionEntity>> searchQuestions(
+    public MsgEntity<SearchHits<com.oriole.ocean.common.po.es.QuestionEntity>> searchQuestions(
             @AuthUser AuthUserEntity authUser,
-            @NotNull @ApiParam(value = "搜索关键词", required = true) @Valid @RequestParam(value = "keyword", required = true) String keyword,
+            @NotNull @ApiParam(value = "搜索关键词", required = true) @Valid @RequestParam(value = "keywords", required = true) String keyword,
             @NotNull @ApiParam(value = "页码", required = true) @Valid @RequestParam(value = "page", required = true) Integer page,
-            @NotNull @ApiParam(value = "每页显示的问题数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
+            @NotNull @ApiParam(value = "每页显示的问题数量", required = true) @Valid @RequestParam(value = "rows", required = true) Integer pageSize) {
 
-        SearchHits<QuestionEntity> searchHits = eSearchService.searchQuestions(keyword, page, pageSize);
-        return ResponseEntity.ok(searchHits);
+        SearchHits<com.oriole.ocean.common.po.es.QuestionEntity> searchHits = eSearchService.searchQuestions(keyword, page, pageSize);
+        return new MsgEntity<>("SUCCESS", "1", searchHits);
     }
 
     @ApiOperation(value = "获取问题标题建议", nickname = "suggestTitle", notes = "根据关键词获取问题标题建议。", response = MsgEntity.class)
