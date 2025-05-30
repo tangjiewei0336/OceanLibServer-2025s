@@ -11,9 +11,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
@@ -24,9 +22,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
 public class QuestionServiceImplTest {
@@ -76,7 +72,7 @@ public class QuestionServiceImplTest {
         Boolean includeDeleted = false;
         List<QuestionEntity> questions = Arrays.asList(new QuestionEntity(), new QuestionEntity());
         Page<QuestionEntity> questionPage = new PageImpl<>(questions);
-        when(mongoQuestionRepository.findByIsDeletedFalseAndIsHiddenFalse(any(Pageable.class))).thenReturn(questionPage);
+        when(mongoQuestionRepository.findByIsDeletedFalseAndIsHiddenFalseAndIsPostedTrue(any(Pageable.class))).thenReturn(questionPage);
 
         // Act
         MsgEntity<Page<QuestionEntity>> result = questionService.getQuestions(page, pageSize, username, sortMethod, includeDeleted);
@@ -85,7 +81,7 @@ public class QuestionServiceImplTest {
         assertNotNull(result);
         assertEquals("SUCCESS", result.getCode());
         assertEquals(2, result.getMsg().getTotalElements());
-        verify(mongoQuestionRepository, times(1)).findByIsDeletedFalseAndIsHiddenFalse(any(Pageable.class));
+        verify(mongoQuestionRepository, times(1)).findByIsDeletedFalseAndIsHiddenFalseAndIsPostedTrue(any(Pageable.class));
     }
 
     @Test
@@ -124,7 +120,7 @@ public class QuestionServiceImplTest {
         List<QuestionEntity> questions = Arrays.asList(
             new QuestionEntity(), new QuestionEntity()
         );
-        when(mongoQuestionRepository.findByBindIdInAndIsDeletedFalse(questionIds)).thenReturn(questions);
+        when(mongoQuestionRepository.findByBindIdInAndIsDeletedFalseAndIsPostedTrue(questionIds)).thenReturn(questions);
 
         // Act
         List<QuestionEntity> result = questionService.getQuestionByIds(questionIds);
@@ -132,7 +128,7 @@ public class QuestionServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals(2, result.size());
-        verify(mongoQuestionRepository, times(1)).findByBindIdInAndIsDeletedFalse(questionIds);
+        verify(mongoQuestionRepository, times(1)).findByBindIdInAndIsDeletedFalseAndIsPostedTrue(questionIds);
     }
 
     @Test
@@ -146,7 +142,7 @@ public class QuestionServiceImplTest {
         // Assert
         assertNotNull(result);
         assertTrue(result.isEmpty());
-        verify(mongoQuestionRepository, never()).findByBindIdInAndIsDeletedFalse(any());
+        verify(mongoQuestionRepository, never()).findByBindIdInAndIsDeletedFalseAndIsPostedTrue(any());
     }
 
     @Test

@@ -1,12 +1,10 @@
 package com.oriole.ocean.service.impl;
 
 import com.oriole.ocean.common.po.mongo.QuestionEntity;
-import com.oriole.ocean.common.service.UserWalletService;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.repository.MongoQuestionRepository;
 import com.oriole.ocean.service.QuestionService;
 import com.oriole.ocean.service.SequenceGeneratorService;
-import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -75,15 +73,15 @@ public class QuestionServiceImpl implements QuestionService {
 
         if (username != null && !username.isEmpty()) {
             if (includeDeleted != null && includeDeleted) {
-                questions = mongoQuestionRepository.findByUserIdAndIsHiddenFalse(username, pageable);
+                questions = mongoQuestionRepository.findByUserIdAndIsHiddenFalseAndIsPostedTrue(username, pageable);
             } else {
-                questions = mongoQuestionRepository.findByUserIdAndIsDeletedFalseAndIsHiddenFalse(username, pageable);
+                questions = mongoQuestionRepository.findByUserIdAndIsDeletedFalseAndIsHiddenFalseAndIsPostedTrue(username, pageable);
             }
         } else {
             if (includeDeleted != null && includeDeleted) {
-                questions = mongoQuestionRepository.findByIsHiddenFalse(pageable);
+                questions = mongoQuestionRepository.findByIsHiddenFalseAndIsPostedTrue(pageable);
             } else {
-                questions = mongoQuestionRepository.findByIsDeletedFalseAndIsHiddenFalse(pageable);
+                questions = mongoQuestionRepository.findByIsDeletedFalseAndIsHiddenFalseAndIsPostedTrue(pageable);
             }
         }
 
@@ -116,7 +114,7 @@ public class QuestionServiceImpl implements QuestionService {
         if (questionIds == null || questionIds.isEmpty()) {
             return Collections.emptyList();
         }
-        List<QuestionEntity> questions = mongoQuestionRepository.findByBindIdInAndIsDeletedFalse(questionIds);
+        List<QuestionEntity> questions = mongoQuestionRepository.findByBindIdInAndIsDeletedFalseAndIsPostedTrue(questionIds);
         if (questions == null || questions.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No questions found for the provided IDs");
         }

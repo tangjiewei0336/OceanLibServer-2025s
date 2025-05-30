@@ -10,22 +10,22 @@ import java.util.List;
 public interface MongoQuestionRepository extends MongoRepository<QuestionEntity, String> {
 
     // 查询所有未删除且不是草稿的问题
-    Page<QuestionEntity> findByIsDeletedFalseAndIsHiddenFalse(Pageable pageable);
+    Page<QuestionEntity> findByIsDeletedFalseAndIsHiddenFalseAndIsPostedTrue(Pageable pageable);
 
     // 查询指定用户的所有未删除且不是草稿的问题
-    Page<QuestionEntity> findByUserIdAndIsDeletedFalseAndIsHiddenFalse(String userId, Pageable pageable);
+    Page<QuestionEntity> findByUserIdAndIsDeletedFalseAndIsHiddenFalseAndIsPostedTrue(String userId, Pageable pageable);
 
     QuestionEntity findByBindIdAndIsDeletedFalse(Integer id);
 
     long countByUserIdAndIsDeletedFalse(String userId);
 
-    List<QuestionEntity> findByBindIdInAndIsDeletedFalse(List<Integer> questionIds);
+    List<QuestionEntity> findByBindIdInAndIsDeletedFalseAndIsPostedTrue(List<Integer> questionIds);
 
     // 查询指定用户的所有未删除且不是草稿的问题
-    Page<QuestionEntity> findByUserIdAndIsHiddenFalse(String username, Pageable pageable);
+    Page<QuestionEntity> findByUserIdAndIsHiddenFalseAndIsPostedTrue(String username, Pageable pageable);
 
 
-    Page<QuestionEntity> findByIsHiddenFalse(Pageable pageable);
+    Page<QuestionEntity> findByIsHiddenFalseAndIsPostedTrue(Pageable pageable);
 
 
 
