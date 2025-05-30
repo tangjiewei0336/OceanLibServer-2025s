@@ -1,21 +1,39 @@
 package com.oriole.ocean.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.oriole.ocean.common.auth.AuthUser;
 import com.oriole.ocean.common.dto.UserSearchDTO;
 import com.oriole.ocean.common.enumerate.UserInfoLevel;
 import com.oriole.ocean.common.po.mysql.UserEntity;
+import com.oriole.ocean.common.po.mysql.UserExtraEntity;
 import com.oriole.ocean.common.vo.AuthUserEntity;
 import com.oriole.ocean.common.vo.BusinessException;
 import com.oriole.ocean.common.vo.MsgEntity;
+import com.oriole.ocean.dao.UserDao;
+import com.oriole.ocean.dao.UserExtraDao;
 import com.oriole.ocean.service.UserInfoServiceImpl;
 import com.oriole.ocean.service.base.UserBaseInfoServiceImpl;
+import com.oriole.ocean.service.base.UserCertificationServiceImpl;
+import com.oriole.ocean.service.base.UserExtraInfoServiceImpl;
+import com.oriole.ocean.service.base.UserWalletServiceImpl;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @RestController
 @Slf4j
@@ -27,7 +45,7 @@ public class UserInfoController {
     @Autowired
     UserInfoServiceImpl userInfoService;
 
-    @RequestMapping(value = "/checkSameUsername",method = RequestMethod.GET)
+    @RequestMapping(value = "/checkSameUsername", method = RequestMethod.GET)
     public MsgEntity<String> checkSameUsername(@RequestParam String username) {
         UserEntity userEntity = userBaseInfoService.getById(username);
         if (userEntity == null) {
@@ -36,25 +54,25 @@ public class UserInfoController {
             throw new BusinessException("-2", "用户名不得重复");
         }
     }
-    
-    @RequestMapping(value = "/getUserLimitedInfo",method = RequestMethod.GET)
+
+    @RequestMapping(value = "/getUserLimitedInfo", method = RequestMethod.GET)
     public MsgEntity<UserEntity> getUserLimitedInfo(@RequestParam String username) {
         return new MsgEntity<>("SUCCESS", "1", userInfoService.getUserInfo(username, UserInfoLevel.LIMITED));
     }
 
-    @RequestMapping(value = "/getUserBaseInfo",method = RequestMethod.GET)
+    @RequestMapping(value = "/getUserBaseInfo", method = RequestMethod.GET)
     public MsgEntity<UserEntity> getUserBaseInfo(@AuthUser AuthUserEntity authUser) {
         return new MsgEntity<>("SUCCESS", "1",
                 userInfoService.getUserInfo(authUser.getUsername(), UserInfoLevel.BASE));
     }
 
-    @RequestMapping(value = "/getUserAllInfo",method = RequestMethod.GET)
+    @RequestMapping(value = "/getUserAllInfo", method = RequestMethod.GET)
     public MsgEntity<UserEntity> getUserAllInfo(@AuthUser AuthUserEntity authUser) {
         return new MsgEntity<>("SUCCESS", "1",
                 userInfoService.getUserInfo(authUser.getUsername(), UserInfoLevel.ALL));
     }
 
-    @RequestMapping(value = "/updateUserInfo",method = RequestMethod.PUT)
+    @RequestMapping(value = "/updateUserInfo", method = RequestMethod.PUT)
     public MsgEntity<UserEntity> updateUserInfo(@AuthUser AuthUserEntity authUser, @RequestBody UserEntity updatedInfo) {
         return new MsgEntity<>("SUCCESS", "1",
                 userInfoService.updateUserInfo(authUser, updatedInfo));
@@ -85,5 +103,5 @@ public class UserInfoController {
         UserEntity userEntity = userBaseInfoService.banUser(authUser, username);
         return new MsgEntity<>("SUCCESS", "1", userEntity);
     }
-
 }
+
