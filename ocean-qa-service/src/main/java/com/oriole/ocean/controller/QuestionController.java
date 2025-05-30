@@ -85,7 +85,7 @@ public class QuestionController {
         if (username != null && !username.isEmpty()) {
             result = questionService.getQuestions(page, pageSize, username, sort, false);
         } else {
-            result = questionService.getQuestions(page, pageSize, authUser.getUsername(), sort, false);
+            result = questionService.getQuestions(page, pageSize, null, sort, false);
         }
 
         if (result == null) {
