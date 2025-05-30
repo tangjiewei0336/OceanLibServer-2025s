@@ -40,7 +40,7 @@ public class QuestionServiceImpl implements QuestionService {
         question.setContent(content != null ? content : "");
         question.setCreateTime(new Date());
         question.setUpdateTime(new Date());
-        question.setIsHidden(true);
+        question.setIsPosted(false);
         question.setBindId(sequenceGeneratorService.getNextSequence("questions"));
 
         QuestionEntity savedQuestion = mongoQuestionRepository.save(question);
