@@ -57,7 +57,7 @@ class AnswerServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals("SUCCESS", result.getCode());
-        assertEquals(1, result.getData());
+        assertEquals("1", result.getCode());
         verify(answerRepository, times(1)).save(any(AnswerEntity.class));
     }
 
@@ -78,7 +78,7 @@ class AnswerServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals("SUCCESS", result.getCode());
-        assertEquals(2, result.getData().getTotalElements());
+        assertEquals(2, result.getMsg().getTotalElements());
         verify(answerRepository, times(1)).findByQuestionIdAndIsDeletedFalse(eq(questionId), any(Pageable.class));
     }
 
@@ -171,7 +171,7 @@ class AnswerServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals("SUCCESS", result.getCode());
-        assertEquals(2, result.getData().getTotalElements());
+        assertEquals(2, result.getMsg().getTotalElements());
         verify(answerRepository, times(1)).findByUserIdAndIsDeletedFalse(eq(username), any(Pageable.class));
     }
 
@@ -191,7 +191,7 @@ class AnswerServiceImplTest {
         // Assert
         assertNotNull(result);
         assertEquals("SUCCESS", result.getCode());
-        assertEquals(2, result.getData().getTotalElements());
+        assertEquals(2, result.getMsg().getTotalElements());
         verify(answerRepository, times(1)).findByIsDeletedFalse(any(Pageable.class));
     }
 } 
