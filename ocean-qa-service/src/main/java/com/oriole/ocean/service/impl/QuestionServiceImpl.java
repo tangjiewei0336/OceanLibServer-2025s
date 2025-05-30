@@ -122,6 +122,8 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public MsgEntity<QuestionEntity> updateQuestion(Integer questionId, String title, String content,
                                                     Boolean isPost, Boolean isHide, Integer setReward, String userId) {
+        // TODO: 没有处理setReward
+
         QuestionEntity question = mongoQuestionRepository.findByBindIdAndIsDeletedFalse(questionId);
         if (question == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Question not found");
@@ -147,23 +149,11 @@ public class QuestionServiceImpl implements QuestionService {
         if (isPost != null) {
             question.setIsPosted(isPost);
             question.setIsHidden(false);
-
-            // 预冻结点数
-            if (!userWalletService.freezePoints(userId, setReward, "预冻结问题奖励点数", questionId)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to freeze reward points");
-            }
         }
 
         if (isHide != null) {
             question.setIsHidden(isHide);
             question.setIsPosted(false);
-        }
-
-        if (setReward != null && setReward > 0) {
-            if(question.getIsRewardDistributed()){
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Question reward already distributed");
-            }
-            question.setRewardPoints(setReward);
         }
 
         question.setUpdateTime(new Date());
