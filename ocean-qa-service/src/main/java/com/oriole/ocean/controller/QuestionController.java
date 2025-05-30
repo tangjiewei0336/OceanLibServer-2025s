@@ -77,11 +77,15 @@ public class QuestionController {
             @AuthUser AuthUserEntity authUser,
             @NotNull @ApiParam(value = "查询用户或所有", required = false) @Valid @RequestParam(value = "username", required = false) String username,
             @NotNull @ApiParam(value = "排序方式，0:时间更新 1:热度", required = false) @Valid @RequestParam(value = "sort", required = false) Integer sort,
+            Boolean showDraft,
             @NotNull @ApiParam(value = "页码", required = true) @Valid @RequestParam(value = "page", required = true) Integer page,
             @NotNull @ApiParam(value = "每页显示的问题数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
         MsgEntity<Page<QuestionEntity>> result = null;
-        if(sort == null) {
-            sort = 0;
+
+        if (username != null && !username.isEmpty()) {
+            result = questionService.getQuestions(page, pageSize, username, sort, false);
+        } else {
+            result = questionService.getQuestions(page, pageSize, authUser.getUsername(), sort, false);
         }
 
         if (result == null) {

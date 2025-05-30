@@ -6,6 +6,7 @@ import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.repository.MongoQuestionRepository;
 import com.oriole.ocean.service.QuestionService;
 import com.oriole.ocean.service.SequenceGeneratorService;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,8 +28,6 @@ public class QuestionServiceImpl implements QuestionService {
     @Autowired
     private SequenceGeneratorService sequenceGeneratorService;
 
-    @Autowired
-    private UserWalletService userWalletService;
 
     @Autowired
     public QuestionServiceImpl(MongoQuestionRepository mongoQuestionRepository) {
@@ -55,38 +54,43 @@ public class QuestionServiceImpl implements QuestionService {
         // 当username为空时，展示所有的问题；不为空时则展示这个人提出的问题。 默认按照时间更新顺序。
         // sortMethod: 0:时间更新 1:热度
 
-        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
+        Pageable pageable;
         Page<QuestionEntity> questions;
-        if (username != null && !username.isEmpty()) {
-            questions = mongoQuestionRepository.findByUserIdAndIsDeletedFalse(username, pageable);
-        } else {
-            questions = mongoQuestionRepository.findByUserId(username, pageable);
-        }
 
-        if (questions == null || questions.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No questions found");
-        }
-        if (includeDeleted != null && includeDeleted) {
-            questions = mongoQuestionRepository.findAll(pageable);
-        } else {
-            questions = mongoQuestionRepository.findByIsDeletedFalse(pageable);
-        }
         if (sortMethod != null) {
             switch (sortMethod) {
                 case 0: // 按更新时间排序
                     pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "updateTime"));
                     break;
                 case 1: // 按热度排序（假设热度是通过回答数和浏览数计算的）
-                    pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "viewCount", "answerCount"));
+                    pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "viewCount"));
                     break;
                 default:
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid sort method");
             }
-            questions = mongoQuestionRepository.findByIsDeletedFalse(pageable);
+        } else {
+            // 默认按更新时间排序
+            pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "updateTime"));
         }
-        if (questions == null || questions.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No questions found");
+
+        if (username != null && !username.isEmpty()) {
+            if (includeDeleted != null && includeDeleted) {
+                questions = mongoQuestionRepository.findByUserIdAndIsHiddenFalse(username, pageable);
+            } else {
+                questions = mongoQuestionRepository.findByUserIdAndIsDeletedFalseAndIsHiddenFalse(username, pageable);
+            }
+        } else {
+            if (includeDeleted != null && includeDeleted) {
+                questions = mongoQuestionRepository.findByIsHiddenFalse(pageable);
+            } else {
+                questions = mongoQuestionRepository.findByIsDeletedFalseAndIsHiddenFalse(pageable);
+            }
         }
+
+        if (questions == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No questions found");
+        }
+
         return new MsgEntity<>("SUCCESS", "Questions retrieved successfully", questions);
 
     }

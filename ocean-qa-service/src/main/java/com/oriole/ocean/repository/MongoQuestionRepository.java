@@ -8,9 +8,12 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface MongoQuestionRepository extends MongoRepository<QuestionEntity, String> {
-    Page<QuestionEntity> findByIsDeletedFalse(Pageable pageable);
 
-    Page<QuestionEntity> findByUserIdAndIsDeletedFalse(String userId, Pageable pageable);
+    // 查询所有未删除且不是草稿的问题
+    Page<QuestionEntity> findByIsDeletedFalseAndIsHiddenFalse(Pageable pageable);
+
+    // 查询指定用户的所有未删除且不是草稿的问题
+    Page<QuestionEntity> findByUserIdAndIsDeletedFalseAndIsHiddenFalse(String userId, Pageable pageable);
 
     QuestionEntity findByBindIdAndIsDeletedFalse(Integer id);
 
@@ -18,5 +21,13 @@ public interface MongoQuestionRepository extends MongoRepository<QuestionEntity,
 
     List<QuestionEntity> findByBindIdInAndIsDeletedFalse(List<Integer> questionIds);
 
-    Page<QuestionEntity> findByUserId(String username, Pageable pageable);
+    // 查询指定用户的所有未删除且不是草稿的问题
+    Page<QuestionEntity> findByUserIdAndIsHiddenFalse(String username, Pageable pageable);
+
+
+    Page<QuestionEntity> findByIsHiddenFalse(Pageable pageable);
+
+
+
+
 }
