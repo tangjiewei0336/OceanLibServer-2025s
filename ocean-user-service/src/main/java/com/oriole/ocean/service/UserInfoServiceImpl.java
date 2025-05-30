@@ -172,7 +172,7 @@ public class UserInfoServiceImpl {
 
     /**
      * 未分页搜索用户信息
-     * @return 用户信息的 List
+     * @return 用户信息的 List。未使用
      */
     public List<UserEntity> searchUsers(AuthUserEntity authUser, UserInfoLevel infoLevel,
                                         String username, String nickname, String realname,
