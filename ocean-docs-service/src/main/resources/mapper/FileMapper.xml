@@ -95,4 +95,30 @@
         WHERE file_extra.file_id = #{fileID}
     </select>
 
+    <!-- 待审核文件查询 -->
+    <select id="getPendingReviewFiles" resultMap="file">
+        SELECT f.*
+        FROM file f
+                 LEFT JOIN file_check fc ON f.file_id = fc.file_id
+        WHERE f.is_approved = 0
+          AND (fc.file_id IS NULL OR (fc.status = 0 AND fc.processing_time IS NULL))
+    </select>
+
+    <!-- 已审核通过文件查询 -->
+    <select id="getApprovedFiles" resultMap="file">
+        SELECT *
+        FROM file
+        WHERE is_approved = 1
+    </select>
+
+    <!-- 已拒绝文件查询 -->
+    <select id="getRejectedFiles" resultMap="file">
+        SELECT f.*
+        FROM file f
+                 INNER JOIN file_check fc ON f.file_id = fc.file_id
+        WHERE f.is_approved = 0
+          AND fc.status = 1
+          AND fc.processing_time IS NOT NULL
+    </select>
+
 </mapper>

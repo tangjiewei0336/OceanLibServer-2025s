@@ -52,6 +52,10 @@ public class FileServiceImpl extends ServiceImpl<FileDao, FileEntity> implements
         return fileDao.getFileListByFolderID(folderID);
     }
 
+    public List<FileEntity> getFileDetailsInfoListByIsApproved(Byte IsApproved) {
+        return fileDao.getFileListByIsApproved(IsApproved);
+    }
+
     //文章详细信息批量查询（通过FileID列表查询）
     public List<FileEntity> getFileDetailsInfoListByFileIDs(List<Integer> fileIDs) {
         return fileDao.getFileDetailInfosByIds(fileIDs);
@@ -59,11 +63,24 @@ public class FileServiceImpl extends ServiceImpl<FileDao, FileEntity> implements
 
     //保存或更新文章信息
     public void saveOrUpdateFileInfo(FileEntity fileEntity) {
-        saveOrUpdateFileInfo(fileEntity);
+        // 调用父类的 saveOrUpdate 方法，而不是自己
+        super.saveOrUpdate(fileEntity);
+
         FileExtraEntity fileExtraEntity = fileEntity.getFileExtraEntity();
         if (fileExtraEntity != null) {
             fileExtraEntity.setFileID(fileEntity.getFileID());
             fileExtraService.saveOrUpdateFileExtraInfo(fileExtraEntity);
         }
+    }
+    public List<FileEntity> getPendingReviewFiles() {
+        return fileDao.getPendingReviewFiles();
+    }
+
+    public List<FileEntity> getApprovedFiles() {
+        return fileDao.getApprovedFiles();
+    }
+
+    public List<FileEntity> getRejectedFiles() {
+        return fileDao.getRejectedFiles();
     }
 }

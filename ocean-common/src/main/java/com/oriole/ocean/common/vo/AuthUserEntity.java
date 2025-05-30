@@ -13,17 +13,20 @@ public class AuthUserEntity implements java.io.Serializable {
     private String role = null;
 
     public Boolean isUserOwn(List<String> ownerships){
-        return ownerships.contains(this.username) || role.equals("ADMIN");
+        return ownerships.contains(this.username) || role.equals("ADMIN") || isSuperAdmin();
     }
 
     public Boolean isUserOwn(String ownership){
-        return ownership.equals(this.username) || role.equals("ADMIN");
+        return ownership.equals(this.username) || role.equals("ADMIN") || isSuperAdmin();
     }
 
     public Boolean isAdmin(){
         return role.equals("ADMIN");
     }
 
+    public Boolean isSuperAdmin() {
+        return role.equals("SUPERADMIN");
+    }
 
     public String getAllowOperationUsername(String username){
         if (username == null) {

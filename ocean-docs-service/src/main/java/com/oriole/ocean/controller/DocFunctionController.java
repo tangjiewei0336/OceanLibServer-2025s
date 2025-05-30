@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import com.oriole.ocean.service.*;
+import com.oriole.ocean.common.po.mysql.FileCheckEntity;
+import java.util.Date;
 
 
 import java.util.HashMap;
@@ -41,6 +43,8 @@ public class DocFunctionController {
     UserBehaviorService userBehaviorService;
     @DubboReference
     UserWalletService userWalletService;
+    @Autowired
+    private FileCheckServiceImpl fileCheckService;
 
     @Value("${auth.download.token.secretkey}")
     public String DOWNLOAD_TOKEN_ENCODED_SECRET_KEY;
@@ -170,6 +174,63 @@ public class DocFunctionController {
         chaim.put("title", title);
         JwtUtils jwtUtils = new JwtUtils(DOWNLOAD_TOKEN_ENCODED_SECRET_KEY);
         return jwtUtils.encode(username, 60 * 1000, chaim);
+    }
+
+    /**
+     * 管理员审核文档（通过或拒绝）
+     * @param authUser 当前登录用户
+     * @param fileID 文件ID
+     * @param isApproved 是否通过 (1-通过, 0-拒绝)
+     * @param rejectReason 拒绝原因(拒绝时必填)
+     * @param agreeReason 通过理由(通过时可选)
+     * @return 处理结果
+     */
+    @RequestMapping(value = "/postFileCensor", method = RequestMethod.POST)
+    public MsgEntity<String> postFileCensor(
+            @AuthUser AuthUserEntity authUser,
+            @RequestParam Integer fileID,
+            @RequestParam Byte isApproved,
+            @RequestParam String rejectReason,
+            @RequestParam(required = false) String agreeReason
+    ) {
+        // 1. 验证用户权限
+        if (!authUser.isAdmin() && !authUser.isSuperAdmin()) {
+            return new MsgEntity<>("ERROR", "您没有审核文档的权限", null);
+        }
+
+        // 2. 直接获取指定文件
+        FileEntity targetFile = fileService.getFileDetailsInfoByFileID(fileID);
+        if (targetFile == null) {
+            return new MsgEntity<>("ERROR", "文件不存在", null);
+        }
+
+        // 无需检查文件状态，因为前端有复审设计
+
+        // 3. 处理审核记录 - 使用更健壮的方式检查和更新审核记录
+        // 一定是否已存在审核记录
+        FileCheckEntity existingCheck = fileCheckService.getFileCheckInfo(fileID);
+
+        // 一定存在记录，更新现有记录
+        existingCheck.setStatus(isApproved == 1 ? (byte)0 : (byte)1);
+        existingCheck.setRejectReason(isApproved == 1 ? null : rejectReason);
+        existingCheck.setAgreeReason(isApproved == 1 ? agreeReason : null);
+        existingCheck.setProcessingTime(new Date());
+        fileCheckService.updateById(existingCheck);  // 直接调用updateById
+
+        // 4. 更新文件审核状态
+        targetFile.setIsApproved(isApproved);
+        fileService.updateById(targetFile);
+
+        // 5. 返回结果
+        if (isApproved == 1) {
+            return new MsgEntity<>("SUCCESS", "文档审核通过", null);
+        } else {
+            // 拒绝文档时验证拒绝原因
+            if (rejectReason == null || rejectReason.trim().isEmpty()) {
+                return new MsgEntity<>("ERROR", "拒绝文档必须提供拒绝原因", null);
+            }
+            return new MsgEntity<>("SUCCESS", "文档已拒绝", null);
+        }
     }
 
 }
