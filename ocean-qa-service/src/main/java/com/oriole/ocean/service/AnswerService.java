@@ -16,4 +16,13 @@ public interface AnswerService {
     MsgEntity<String> deleteAnswer(Integer answerId, String userId);
 
     MsgEntity<Page<AnswerEntity>> getAnswersByUserId(String username, @Valid Integer page, @Valid Integer pageSize);
+
+    MsgEntity<Page<AnswerEntity>> getAllAnswers(@Valid Integer page, @Valid Integer pageSize);
+
+    /**
+     * 根据回答ID获取回答信息
+     * @param answerId 回答ID
+     * @return 回答实体
+     */
+    AnswerEntity getAnswerById(Integer answerId);
 }

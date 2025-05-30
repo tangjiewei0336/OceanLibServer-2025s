@@ -4,11 +4,14 @@ import com.oriole.ocean.common.auth.AuthUser;
 import com.oriole.ocean.common.enumerate.BehaviorType;
 import com.oriole.ocean.common.enumerate.MainType;
 import com.oriole.ocean.common.po.mongo.QuestionEntity;
+import com.oriole.ocean.common.po.mongo.AnswerEntity;
 import com.oriole.ocean.common.po.mongo.UserBehaviorEntity;
 import com.oriole.ocean.common.service.UserBehaviorService;
+import com.oriole.ocean.common.service.UserWalletService;
 import com.oriole.ocean.common.vo.AuthUserEntity;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.service.QuestionService;
+import com.oriole.ocean.service.AnswerService;
 import com.oriole.ocean.service.impl.QaESearchServiceImpl;
 import com.sun.istack.internal.NotNull;
 import io.swagger.annotations.ApiOperation;
@@ -36,9 +39,14 @@ public class QuestionController {
     @DubboReference
     UserBehaviorService userBehaviorService;
 
+    @DubboReference
+    UserWalletService userWalletService;
 
     @Autowired
     QaESearchServiceImpl eSearchService;
+
+    @Autowired
+    AnswerService answerService;
 
     public QuestionController(QuestionService questionService) {
         this.questionService = questionService;
@@ -148,6 +156,10 @@ public class QuestionController {
             @NotNull @ApiParam(value = "问题的 ID", required = true) @Valid @RequestParam(value = "questionId", required = true) Integer questionId) {
 
         QuestionEntity question = questionService.getQuestionById(questionId);
+
+        // 记录浏览数据
+        userBehaviorService.setBehaviorRecord(new UserBehaviorEntity(questionId, MainType.QUESTION, authUser.getUsername(), BehaviorType.DO_READ));
+
         if (question == null) {
             return ResponseEntity.status(404).body(new MsgEntity<>("ERROR", "Question not found", null));
         }

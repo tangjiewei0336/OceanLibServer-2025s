@@ -89,7 +89,6 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Override
     public MsgEntity<Page<AnswerEntity>> getAnswersByUserId(String username, Integer page, Integer pageSize) {
-
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
         Page<AnswerEntity> answers = answerRepository.findByUserIdAndIsDeletedFalse(username, pageable);
         if (answers == null || answers.isEmpty()) {
@@ -101,5 +100,28 @@ public class AnswerServiceImpl implements AnswerService {
         }
 
         return new MsgEntity<>("SUCCESS", "Answers retrieved successfully", answers);
+    }
+
+    @Override
+    public MsgEntity<Page<AnswerEntity>> getAllAnswers(Integer page, Integer pageSize) {
+        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
+        Page<AnswerEntity> answers = answerRepository.findByIsDeletedFalse(pageable);
+        if (answers == null || answers.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No answers found");
+        }
+        for (AnswerEntity answer : answers) {
+            answer.setQuestion(questionService.getQuestionById(answer.getQuestionId()));
+        }
+
+        return new MsgEntity<>("SUCCESS", "All answers retrieved successfully", answers);
+    }
+
+    @Override
+    public AnswerEntity getAnswerById(Integer answerId) {
+        AnswerEntity answer = answerRepository.findByIdAndIsDeletedFalse(answerId);
+        if (answer == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Answer not found");
+        }
+        return answer;
     }
 }

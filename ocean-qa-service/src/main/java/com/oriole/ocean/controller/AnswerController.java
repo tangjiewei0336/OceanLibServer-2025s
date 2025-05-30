@@ -25,8 +25,10 @@ import org.springframework.web.bind.annotation.*;
 public class AnswerController {
 
     private final AnswerService answerService;
+
     @DubboReference
     UserBehaviorService userBehaviorService;
+
     @DubboReference
     NotifyService notifyService;
 
@@ -107,6 +109,21 @@ public class AnswerController {
             @NotNull @ApiParam(value = "每页显示的回答数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
 
         MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByUserId(authUser.getUsername(), page, pageSize);
+        return ResponseEntity.ok(result);
+    }
+
+    @ApiOperation(value = "获取所有回答", nickname = "getAllAnswers", notes = "分页获取所有回答列表", response = MsgEntity.class, tags = {"用户服务器/ocean-qa-service/AnswerController",})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "返回回答列表", response = MsgEntity.class),
+            @ApiResponse(code = 401, message = "未授权", response = Object.class),
+            @ApiResponse(code = 500, message = "服务器内部错误", response = Object.class)})
+    @GetMapping(value = "/all", produces = {"application/json"})
+    public ResponseEntity<MsgEntity<Page<AnswerEntity>>> getAllAnswers(
+            @AuthUser AuthUserEntity authUser,
+            @NotNull @ApiParam(value = "页码", required = true) @Valid @RequestParam(value = "page", required = true) Integer page,
+            @NotNull @ApiParam(value = "每页显示的回答数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
+
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAllAnswers(page, pageSize);
         return ResponseEntity.ok(result);
     }
 }

@@ -1,6 +1,7 @@
 package com.oriole.ocean.service.impl;
 
 import com.oriole.ocean.common.po.mongo.QuestionEntity;
+import com.oriole.ocean.common.service.UserWalletService;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.repository.MongoQuestionRepository;
 import com.oriole.ocean.service.QuestionService;
@@ -26,6 +27,8 @@ public class QuestionServiceImpl implements QuestionService {
     @Autowired
     private SequenceGeneratorService sequenceGeneratorService;
 
+    @Autowired
+    private UserWalletService userWalletService;
 
     @Autowired
     public QuestionServiceImpl(MongoQuestionRepository mongoQuestionRepository) {
@@ -40,6 +43,7 @@ public class QuestionServiceImpl implements QuestionService {
         question.setContent(content != null ? content : "");
         question.setCreateTime(new Date());
         question.setUpdateTime(new Date());
+        question.setIsHidden(true);
         question.setBindId(sequenceGeneratorService.getNextSequence("questions"));
 
         QuestionEntity savedQuestion = mongoQuestionRepository.save(question);
@@ -143,6 +147,11 @@ public class QuestionServiceImpl implements QuestionService {
         if (isPost != null) {
             question.setIsPosted(isPost);
             question.setIsHidden(false);
+
+            // 预冻结点数
+            if (!userWalletService.freezePoints(userId, setReward, "预冻结问题奖励点数", questionId)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Failed to freeze reward points");
+            }
         }
 
         if (isHide != null) {
@@ -151,6 +160,9 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         if (setReward != null && setReward > 0) {
+            if(question.getIsRewardDistributed()){
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Question reward already distributed");
+            }
             question.setRewardPoints(setReward);
         }
 
