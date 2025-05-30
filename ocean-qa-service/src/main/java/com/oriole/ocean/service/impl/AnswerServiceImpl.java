@@ -106,8 +106,8 @@ public class AnswerServiceImpl implements AnswerService {
     public MsgEntity<Page<AnswerEntity>> getAllAnswers(Integer page, Integer pageSize) {
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
         Page<AnswerEntity> answers = answerRepository.findByIsDeletedFalse(pageable);
-        if (answers == null || answers.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No answers found");
+        if (answers == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No answers found");
         }
         for (AnswerEntity answer : answers) {
             answer.setQuestion(questionService.getQuestionById(answer.getQuestionId()));
