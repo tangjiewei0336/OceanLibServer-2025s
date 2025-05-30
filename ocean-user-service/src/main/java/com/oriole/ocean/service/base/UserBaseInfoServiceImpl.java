@@ -32,6 +32,7 @@ public class UserBaseInfoServiceImpl extends ServiceImpl<UserDao, UserEntity> {
         return userEntity;
     }
 
+    // 未使用
     public UserEntity banUser(AuthUserEntity authUser, String username) {
         // 1. 获取执行操作的用户角色
         String operatorRole = authUser.getRole();
