@@ -40,6 +40,10 @@ spring:
           uri: lb://ocean-notify-service
           predicates:
             - Path=/notify/**
+        - id: qa
+          uri: lb://ocean-qa-service
+          predicates:
+            - Path=/qaService/**
 auth:
   login:
     token:

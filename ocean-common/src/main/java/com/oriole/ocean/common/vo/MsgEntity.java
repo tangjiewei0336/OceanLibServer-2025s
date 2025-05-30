@@ -19,6 +19,7 @@ public class MsgEntity<T> implements java.io.Serializable {
         this.msg = (T) resultCode.getMsg();
     }
 
+
     public String getState() {
         return state;
     }

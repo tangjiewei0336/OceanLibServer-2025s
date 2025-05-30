@@ -8,6 +8,7 @@
         <option value="$PROJECT_DIR$/ocean-docs-service/pom.xml" />
         <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/ocean-comment-service/pom.xml" />
+        <option value="$PROJECT_DIR$/ocean-qa-service/pom.xml" />
       </list>
     </option>
     <option name="ignoredFiles">

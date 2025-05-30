@@ -16,6 +16,7 @@
     <module>ocean-comment-service</module>
     <module>ocean-notify-service</module>
     <module>ocean-note-service</module>
+    <module>ocean-qa-service</module>
   </modules>
 
   <modelVersion>4.0.0</modelVersion>

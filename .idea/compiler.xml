@@ -17,6 +17,7 @@
         <module name="ocean-gateway" />
         <module name="ocean-user-behavior-service" />
         <module name="ocean-note-service" />
+        <module name="ocean-qa-service" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -35,6 +36,7 @@
       <module name="ocean-gateway" options="-parameters" />
       <module name="ocean-note-service" options="-parameters" />
       <module name="ocean-notify-service" options="-parameters" />
+      <module name="ocean-qa-service" options="-parameters" />
       <module name="ocean-user-behavior-service" options="-parameters" />
       <module name="ocean-user-service" options="-parameters" />
       <module name="springcloud-eureka-server" options="-parameters" />
