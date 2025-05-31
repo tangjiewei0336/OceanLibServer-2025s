@@ -1,0 +1,55 @@
+2025-05-25 21:09:49 ERROR Version:262 -  [DUBBO] Duplicate class org/apache/dubbo/common/Version.class in 2 jar [file:/C:/Users/Administrator/.m2/repository/org/apache/dubbo/dubbo/3.0.9/dubbo-3.0.9.jar!/org/apache/dubbo/common/Version.class, file:/C:/Users/Administrator/.m2/repository/org/apache/dubbo/dubbo-common/3.0.9/dubbo-common-3.0.9.jar!/org/apache/dubbo/common/Version.class], dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  FrameworkModel:313 -  [DUBBO] Reset global default framework from null to Dubbo Framework[1], dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  FrameworkModel:77 -  [DUBBO] Dubbo Framework[1] is created, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  ApplicationModel:203 -  [DUBBO] Dubbo Application[1.0](unknown) is created, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  ScopeModel:59 -  [DUBBO] Dubbo Module[1.0.0] is created, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  AbstractConfigManager:137 -  [DUBBO] Config settings: {dubbo.config.mode=STRICT, dubbo.config.ignore-duplicated-interface=false}, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  AbstractConfigManager:137 -  [DUBBO] Config settings: {dubbo.config.mode=STRICT, dubbo.config.ignore-duplicated-interface=false}, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  FrameworkModel:294 -  [DUBBO] Reset global default application from null to Dubbo Application[1.1](unknown), dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  ApplicationModel:203 -  [DUBBO] Dubbo Application[1.1](unknown) is created, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  ScopeModel:59 -  [DUBBO] Dubbo Module[1.1.0] is created, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  AbstractConfigManager:137 -  [DUBBO] Config settings: {dubbo.config.mode=STRICT, dubbo.config.ignore-duplicated-interface=false}, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  AbstractConfigManager:137 -  [DUBBO] Config settings: {dubbo.config.mode=STRICT, dubbo.config.ignore-duplicated-interface=false}, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  DubboSpringInitializer:115 -  [DUBBO] Use default application: Dubbo Application[1.1](unknown), dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  ScopeModel:59 -  [DUBBO] Dubbo Module[1.1.1] is created, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  AbstractConfigManager:137 -  [DUBBO] Config settings: {dubbo.config.mode=STRICT, dubbo.config.ignore-duplicated-interface=false}, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  DubboSpringInitializer:125 -  [DUBBO] Use default module model of target application: Dubbo Module[1.1.1], dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  DubboSpringInitializer:129 -  [DUBBO] Bind Dubbo Module[1.1.1] to spring container: org.springframework.beans.factory.support.DefaultListableBeanFactory@226b143b, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  ServiceAnnotationPostProcessor:272 -  [DUBBO] BeanNameGenerator bean can't be found in BeanFactory with name [org.springframework.context.annotation.internalConfigurationBeanNameGenerator], dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  ServiceAnnotationPostProcessor:274 -  [DUBBO] BeanNameGenerator will be a instance of org.springframework.context.annotation.AnnotationBeanNameGenerator , it maybe a potential problem on bean name generation., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  ServiceAnnotationPostProcessor:229 -  [DUBBO] Found 1 classes annotated by Dubbo @Service under package [com.oriole.ocean]: [com.oriole.ocean.service.base.UserWalletServiceImpl], dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:52 INFO  ServiceAnnotationPostProcessor:594 -  [DUBBO] Register ServiceBean[ServiceBean:com.oriole.ocean.common.service.UserWalletService]: Root bean: class [org.apache.dubbo.config.spring.ServiceBean]; scope=; abstract=false; lazyInit=null; autowireMode=0; dependencyCheck=0; autowireCandidate=true; primary=false; factoryBeanName=null; factoryMethodName=null; initMethodName=null; destroyMethodName=null, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultApplicationDeployer:430 -  [DUBBO] No value is configured in the registry, the DynamicConfigurationFactory extension[name : nacos] supports as the config center, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultApplicationDeployer:436 -  [DUBBO] The registry[<dubbo:registry address="nacos://127.0.0.1:8848" protocol="nacos" port="8848" />] will be used as the config center, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultApplicationDeployer:324 -  [DUBBO] use registry as config-center: <dubbo:config-center highestPriority="false" id="config-center-nacos-127.0.0.1-8848" address="nacos://127.0.0.1:8848" protocol="nacos" port="8848" />, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 WARN  ConfigurationUtils:167 -  [DUBBO] Config center was specified, but no config item found., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 WARN  ConfigurationUtils:167 -  [DUBBO] Config center was specified, but no config item found., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultModuleDeployer:122 -  [DUBBO] Dubbo Module[1.1.0] has been initialized!, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultModuleDeployer:122 -  [DUBBO] Dubbo Module[1.1.1] has been initialized!, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultApplicationDeployer:430 -  [DUBBO] No value is configured in the registry, the MetadataReportFactory extension[name : nacos] supports as the metadata center, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultApplicationDeployer:436 -  [DUBBO] The registry[<dubbo:registry address="nacos://127.0.0.1:8848" protocol="nacos" port="8848" />] will be used as the metadata center, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultApplicationDeployer:398 -  [DUBBO] use registry as metadata-center: <dubbo:metadata-report address="nacos://127.0.0.1:8848" protocol="nacos" port="8848" />, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultApplicationDeployer:197 -  [DUBBO] Dubbo Application[1.1](ocean-user-service) has been initialized!, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DubboShutdownHook:70 -  [DUBBO] Run shutdown hook now., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  FrameworkModel:294 -  [DUBBO] Reset global default application from Dubbo Application[1.1](ocean-user-service) to null, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultApplicationDeployer:981 -  [DUBBO] Dubbo Application[1.1](ocean-user-service) is stopping., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  RegistryManager:98 -  [DUBBO] Close all registries [], dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultModuleDeployer:288 -  [DUBBO] Dubbo Module[1.1.1] is stopping., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultModuleDeployer:298 -  [DUBBO] Dubbo Module[1.1.1] has stopped., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultModuleDeployer:288 -  [DUBBO] Dubbo Module[1.1.0] is stopping., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultModuleDeployer:298 -  [DUBBO] Dubbo Module[1.1.0] has stopped., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultExecutorRepository:302 -  [DUBBO] destroying application executor repository .., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultApplicationDeployer:995 -  [DUBBO] Dubbo Application[1.1](ocean-user-service) has stopped., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  FrameworkModel:108 -  [DUBBO] Destroying default framework model: Dubbo Framework[1], dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  FrameworkModel:113 -  [DUBBO] Dubbo Framework[1] is destroying ..., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultApplicationDeployer:981 -  [DUBBO] Dubbo Application[1.0](DUBBO_INTERNAL_APPLICATION) is stopping., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  RegistryManager:98 -  [DUBBO] Close all registries [], dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultModuleDeployer:288 -  [DUBBO] Dubbo Module[1.0.0] is stopping., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultModuleDeployer:298 -  [DUBBO] Dubbo Module[1.0.0] has stopped., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultExecutorRepository:302 -  [DUBBO] destroying application executor repository .., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  DefaultApplicationDeployer:995 -  [DUBBO] Dubbo Application[1.0](DUBBO_INTERNAL_APPLICATION) has stopped., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  FrameworkModel:129 -  [DUBBO] Dubbo Framework[1] is destroyed, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  FrameworkModel:313 -  [DUBBO] Reset global default framework from Dubbo Framework[1] to null, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  GlobalResourcesRepository:92 -  [DUBBO] Destroying global resources ..., dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  GlobalResourcesRepository:120 -  [DUBBO] Dubbo is completely destroyed, dubbo version: 3.0.9, current host: 192.168.31.169
+2025-05-25 21:09:53 INFO  FrameworkExecutorRepository:175 -  [DUBBO] destroying framework executor repository .., dubbo version: 3.0.9, current host: 192.168.31.169
