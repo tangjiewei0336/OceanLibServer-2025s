@@ -1,6 +1,6 @@
 package com.oriole.ocean.config;
 
-import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
+// import com.baomidou.mybatisplus.extension.plugins.PaginationInterceptor;
 import org.mybatis.spring.mapper.MapperScannerConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,10 +10,10 @@ public class MybatisPlusConfig {
     /**
      * 分页插件
      */
-    @Bean
-    public PaginationInterceptor paginationInterceptor() {
-        return new PaginationInterceptor();
-    }
+    // @Bean
+    // public PaginationInterceptor paginationInterceptor() {
+     //   return new PaginationInterceptor();
+    //}
 
     @Bean
     public MapperScannerConfigurer mapperScannerConfigurer(){
