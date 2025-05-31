@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: ocean-collection-service
-          image: boyuzhu4216/ocean-collection-service:v1.0
+          image: ligelic/ocean-collection-service:v1.0
           imagePullPolicy: Always
           ports:
             - containerPort: 8081

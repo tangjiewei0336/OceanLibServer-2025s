@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: ocean-user-service
-          image: boyuzhu4216/ocean-user-service:v1.0
+          image: ligelic/ocean-user-service:v1.0
+          
           ports:
             - containerPort: 8089
 

@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: ocean-note-service
-          image: boyuzhu4216/ocean-note-service:v1.0
+          image: ligelic/ocean-note-service:v1.0
+          
           ports:
             - containerPort: 8086
 

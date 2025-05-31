@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: ocean-comment-service
-          image: boyuzhu4216/ocean-comment-service:v1.0
+          image: ligelic/ocean-comment-service:v1.0
+          
           ports:
             - containerPort: 8082
 

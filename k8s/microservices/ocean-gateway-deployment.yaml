@@ -16,8 +16,8 @@ spec:
     spec:
       containers:
         - name: ocean-gateway
-          image: boyuzhu4216/ocean-gateway:v1.0
-          imagePullPolicy: IfNotPresent
+          image: ligelic/ocean-gateway:v1.0
+          
           ports:
             - containerPort: 8080
 ---

@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
         - name: ocean-notify-service
-          image: boyuzhu4216/ocean-notify-service:v1.0
+          image: ligelic/ocean-notify-service:v1.0
+          
           ports:
             - containerPort: 8087
 
