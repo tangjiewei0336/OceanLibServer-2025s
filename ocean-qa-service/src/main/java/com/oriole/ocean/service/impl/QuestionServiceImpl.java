@@ -32,17 +32,17 @@ public class QuestionServiceImpl implements QuestionService {
     private final MongoQuestionRepository mongoQuestionRepository;
     private final SequenceGeneratorService sequenceGeneratorService;
     private final AnswerService answerService;
-    private final UserBehaviorService userBehaviorService;
+    
+    @DubboReference
+    private UserBehaviorService userBehaviorService;
 
     @Autowired
     public QuestionServiceImpl(MongoQuestionRepository mongoQuestionRepository,
                              SequenceGeneratorService sequenceGeneratorService,
-                             @Lazy AnswerService answerService,
-                             UserBehaviorService userBehaviorService) {
+                             @Lazy AnswerService answerService) {
         this.mongoQuestionRepository = mongoQuestionRepository;
         this.sequenceGeneratorService = sequenceGeneratorService;
         this.answerService = answerService;
-        this.userBehaviorService = userBehaviorService;
     }
 
     @Override

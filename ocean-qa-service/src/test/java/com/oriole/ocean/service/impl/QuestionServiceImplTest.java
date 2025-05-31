@@ -36,10 +36,10 @@ public class QuestionServiceImplTest {
     private SequenceGeneratorService sequenceGeneratorService;
 
     @Mock
-    private UserBehaviorService userBehaviorService;
+    private AnswerService answerService;
 
     @Mock
-    private AnswerService answerService;
+    private UserBehaviorService userBehaviorService;
 
     private QuestionServiceImpl questionService;
 
@@ -48,9 +48,16 @@ public class QuestionServiceImplTest {
         questionService = new QuestionServiceImpl(
             mongoQuestionRepository,
             sequenceGeneratorService,
-            answerService,
-            userBehaviorService
+            answerService
         );
+        // 使用反射设置 userBehaviorService
+        try {
+            java.lang.reflect.Field field = QuestionServiceImpl.class.getDeclaredField("userBehaviorService");
+            field.setAccessible(true);
+            field.set(questionService, userBehaviorService);
+        } catch (Exception e) {
+            fail("Failed to set userBehaviorService", e);
+        }
     }
 
     @Test
