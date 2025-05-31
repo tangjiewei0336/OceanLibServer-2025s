@@ -1,10 +1,17 @@
 package com.oriole.ocean.service.impl;
 
+import com.alibaba.nacos.shaded.javax.annotation.Nullable;
+import com.oriole.ocean.common.enumerate.BehaviorType;
+import com.oriole.ocean.common.enumerate.MainType;
 import com.oriole.ocean.common.po.mongo.QuestionEntity;
+import com.oriole.ocean.common.po.mongo.UserBehaviorEntity;
+import com.oriole.ocean.common.service.UserBehaviorService;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.repository.MongoQuestionRepository;
+import com.oriole.ocean.service.AnswerService;
 import com.oriole.ocean.service.QuestionService;
 import com.oriole.ocean.service.SequenceGeneratorService;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -13,6 +20,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.context.annotation.Lazy;
 
 import java.util.Collections;
 import java.util.Date;
@@ -26,6 +34,12 @@ public class QuestionServiceImpl implements QuestionService {
     @Autowired
     private SequenceGeneratorService sequenceGeneratorService;
 
+    @Autowired
+    @Lazy
+    private AnswerService answerService;
+
+    @DubboReference
+    private UserBehaviorService userBehaviorService;
 
     @Autowired
     public QuestionServiceImpl(MongoQuestionRepository mongoQuestionRepository) {
@@ -44,6 +58,11 @@ public class QuestionServiceImpl implements QuestionService {
         question.setBindId(sequenceGeneratorService.getNextSequence("questions"));
 
         QuestionEntity savedQuestion = mongoQuestionRepository.save(question);
+
+        // Record user behavior for question creation
+        UserBehaviorEntity userBehavior = new UserBehaviorEntity(savedQuestion.getBindId(), MainType.QUESTION, userId, BehaviorType.DO_READ);
+        userBehaviorService.setBehaviorRecord(userBehavior);
+
         return new MsgEntity<>("SUCCESS", "Question created successfully", savedQuestion.getBindId());
     }
 
@@ -101,11 +120,15 @@ public class QuestionServiceImpl implements QuestionService {
 //    }
 
     @Override
-    public QuestionEntity getQuestionById(Integer questionId) {
+    public @Nullable QuestionEntity getQuestionById(Integer questionId) {
         QuestionEntity question = mongoQuestionRepository.findByBindIdAndIsDeletedFalse(questionId);
-        if (question == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Question not found");
+        
+        if (question != null) {
+            // Record user behavior for viewing question
+            UserBehaviorEntity userBehavior = new UserBehaviorEntity(questionId, MainType.QUESTION, question.getUserId(), BehaviorType.DO_READ);
+            userBehaviorService.setBehaviorRecord(userBehavior);
         }
+        
         return question;
     }
 
@@ -150,12 +173,12 @@ public class QuestionServiceImpl implements QuestionService {
 
         if (isPost != null) {
             question.setIsPosted(isPost);
-            question.setIsHidden(false);
+            answerService.makeAnswerVisible(questionId, question.getIsPosted() & !question.getIsHidden() & !question.getIsDeleted());
         }
 
         if (isHide != null) {
             question.setIsHidden(isHide);
-            question.setIsPosted(false);
+            answerService.makeAnswerVisible(questionId, question.getIsPosted() & !question.getIsHidden() & !question.getIsDeleted());
         }
 
         question.setUpdateTime(new Date());

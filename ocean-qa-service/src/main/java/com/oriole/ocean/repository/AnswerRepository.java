@@ -8,13 +8,15 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface AnswerRepository extends MongoRepository<AnswerEntity, String> {
-    Page<AnswerEntity> findByQuestionIdAndIsDeletedFalse(Integer questionId, Pageable pageable);
+    Page<AnswerEntity> findByQuestionIdAndIsDeletedFalseAndQuestionVisibleTrue(Integer questionId, Pageable pageable);
 
-    AnswerEntity findByIdAndIsDeletedFalse(Integer id);
+    AnswerEntity findByIdAndIsDeletedFalseAndQuestionVisibleTrue(Integer id);
 
-    Page<AnswerEntity> findByUserIdAndIsDeletedFalse(String userId, Pageable pageable);
+    Page<AnswerEntity> findByUserIdAndIsDeletedFalseAndQuestionVisibleTrue(String userId, Pageable pageable);
 
-    List<AnswerEntity> findByUserIdAndIsDeletedFalse(String userId);
+    List<AnswerEntity> findByUserIdAndIsDeletedFalseAndQuestionVisibleTrue(String userId);
 
-    Page<AnswerEntity> findByIsDeletedFalse(Pageable pageable);
+    Page<AnswerEntity> findByIsDeletedFalseAndQuestionVisibleTrue(Pageable pageable);
+
+    List<AnswerEntity> findByQuestionIdAndQuestionVisibleTrue(Integer questionId);
 }

@@ -12,13 +12,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -69,7 +66,7 @@ class AnswerServiceImplTest {
         int pageSize = 10;
         List<AnswerEntity> answers = Arrays.asList(new AnswerEntity(), new AnswerEntity());
         Page<AnswerEntity> answerPage = new PageImpl<>(answers);
-        when(answerRepository.findByQuestionIdAndIsDeletedFalse(eq(questionId), any(Pageable.class)))
+        when(answerRepository.findByQuestionIdAndIsDeletedFalseAndQuestionVisibleTrue(eq(questionId), any(Pageable.class)))
                 .thenReturn(answerPage);
 
         // Act
@@ -79,7 +76,7 @@ class AnswerServiceImplTest {
         assertNotNull(result);
         assertEquals("SUCCESS", result.getCode());
         assertEquals(2, result.getMsg().getTotalElements());
-        verify(answerRepository, times(1)).findByQuestionIdAndIsDeletedFalse(eq(questionId), any(Pageable.class));
+        verify(answerRepository, times(1)).findByQuestionIdAndIsDeletedFalseAndQuestionVisibleTrue(eq(questionId), any(Pageable.class));
     }
 
     @Test
@@ -91,7 +88,7 @@ class AnswerServiceImplTest {
         AnswerEntity existingAnswer = new AnswerEntity();
         existingAnswer.setId(answerId);
         existingAnswer.setUserId(userId);
-        when(answerRepository.findByIdAndIsDeletedFalse(answerId)).thenReturn(existingAnswer);
+        when(answerRepository.findByIdAndIsDeletedFalseAndQuestionVisibleTrue(answerId)).thenReturn(existingAnswer);
         when(answerRepository.save(any(AnswerEntity.class))).thenReturn(existingAnswer);
 
         // Act
@@ -109,7 +106,7 @@ class AnswerServiceImplTest {
         Integer answerId = 1;
         String content = "Updated answer content";
         String userId = "user123";
-        when(answerRepository.findByIdAndIsDeletedFalse(answerId)).thenReturn(null);
+        when(answerRepository.findByIdAndIsDeletedFalseAndQuestionVisibleTrue(answerId)).thenReturn(null);
 
         // Act & Assert
         assertThrows(ResponseStatusException.class, () -> 
@@ -126,7 +123,7 @@ class AnswerServiceImplTest {
         AnswerEntity existingAnswer = new AnswerEntity();
         existingAnswer.setId(answerId);
         existingAnswer.setUserId("differentUser");
-        when(answerRepository.findByIdAndIsDeletedFalse(answerId)).thenReturn(existingAnswer);
+        when(answerRepository.findByIdAndIsDeletedFalseAndQuestionVisibleTrue(answerId)).thenReturn(existingAnswer);
 
         // Act & Assert
         assertThrows(ResponseStatusException.class, () -> 
@@ -142,7 +139,7 @@ class AnswerServiceImplTest {
         AnswerEntity existingAnswer = new AnswerEntity();
         existingAnswer.setId(answerId);
         existingAnswer.setUserId(userId);
-        when(answerRepository.findByIdAndIsDeletedFalse(answerId)).thenReturn(existingAnswer);
+        when(answerRepository.findByIdAndIsDeletedFalseAndQuestionVisibleTrue(answerId)).thenReturn(existingAnswer);
 
         // Act
         MsgEntity<String> result = answerService.deleteAnswer(answerId, userId);
@@ -161,7 +158,7 @@ class AnswerServiceImplTest {
         Integer pageSize = 10;
         List<AnswerEntity> answers = Arrays.asList(new AnswerEntity(), new AnswerEntity());
         Page<AnswerEntity> answerPage = new PageImpl<>(answers);
-        when(answerRepository.findByUserIdAndIsDeletedFalse(eq(username), any(Pageable.class)))
+        when(answerRepository.findByUserIdAndIsDeletedFalseAndQuestionVisibleTrue(eq(username), any(Pageable.class)))
                 .thenReturn(answerPage);
         when(questionService.getQuestionById(any())).thenReturn(new QuestionEntity());
 
@@ -172,7 +169,7 @@ class AnswerServiceImplTest {
         assertNotNull(result);
         assertEquals("SUCCESS", result.getCode());
         assertEquals(2, result.getMsg().getTotalElements());
-        verify(answerRepository, times(1)).findByUserIdAndIsDeletedFalse(eq(username), any(Pageable.class));
+        verify(answerRepository, times(1)).findByUserIdAndIsDeletedFalseAndQuestionVisibleTrue(eq(username), any(Pageable.class));
     }
 
     @Test
@@ -182,7 +179,7 @@ class AnswerServiceImplTest {
         Integer pageSize = 10;
         List<AnswerEntity> answers = Arrays.asList(new AnswerEntity(), new AnswerEntity());
         Page<AnswerEntity> answerPage = new PageImpl<>(answers);
-        when(answerRepository.findByIsDeletedFalse(any(Pageable.class))).thenReturn(answerPage);
+        when(answerRepository.findByIsDeletedFalseAndQuestionVisibleTrue(any(Pageable.class))).thenReturn(answerPage);
         when(questionService.getQuestionById(any())).thenReturn(new QuestionEntity());
 
         // Act
@@ -192,6 +189,6 @@ class AnswerServiceImplTest {
         assertNotNull(result);
         assertEquals("SUCCESS", result.getCode());
         assertEquals(2, result.getMsg().getTotalElements());
-        verify(answerRepository, times(1)).findByIsDeletedFalse(any(Pageable.class));
+        verify(answerRepository, times(1)).findByIsDeletedFalseAndQuestionVisibleTrue(any(Pageable.class));
     }
 } 

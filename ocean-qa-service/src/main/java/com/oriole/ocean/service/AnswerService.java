@@ -25,4 +25,6 @@ public interface AnswerService {
      * @return 回答实体
      */
     AnswerEntity getAnswerById(Integer answerId);
+
+    int makeAnswerVisible(Integer questionId, boolean visibility);
 }

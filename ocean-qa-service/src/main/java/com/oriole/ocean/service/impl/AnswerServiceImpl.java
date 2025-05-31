@@ -1,6 +1,7 @@
 package com.oriole.ocean.service.impl;
 
 import com.oriole.ocean.common.po.mongo.AnswerEntity;
+import com.oriole.ocean.common.po.mongo.QuestionEntity;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.repository.AnswerRepository;
 import com.oriole.ocean.service.AnswerService;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class AnswerServiceImpl implements AnswerService {
@@ -24,6 +26,7 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Autowired
     private QuestionService questionService;
+
     @Autowired
     private SequenceGeneratorService sequenceGeneratorService;
 
@@ -35,10 +38,16 @@ public class AnswerServiceImpl implements AnswerService {
     @Override
     public MsgEntity<Integer> submitAnswer(Integer questionId, String content, String userId) {
         AnswerEntity answer = new AnswerEntity();
+        QuestionEntity questionById = questionService.getQuestionById(questionId);
+        if(!(questionById.getIsPosted().equals(Boolean.TRUE) && questionById.getIsDeleted().equals(Boolean.FALSE)
+                                && questionById.getIsHidden().equals(Boolean.FALSE))){
+            return new MsgEntity<>("FAIL", "Question not visible", -1);
+        }
         answer.setId(sequenceGeneratorService.getNextSequence("answer"));
         answer.setQuestionId(questionId);
         answer.setUserId(userId);
         answer.setContent(content);
+        answer.setQuestionVisible(true);
         answer.setCreateTime(new Date());
         answer.setUpdateTime(new Date());
 
@@ -50,13 +59,13 @@ public class AnswerServiceImpl implements AnswerService {
     @Override
     public MsgEntity<Page<AnswerEntity>> getAnswersByQuestionId(Integer questionId, int page, int pageSize) {
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
-        Page<AnswerEntity> answers = answerRepository.findByQuestionIdAndIsDeletedFalse(questionId, pageable);
+        Page<AnswerEntity> answers = answerRepository.findByQuestionIdAndIsDeletedFalseAndQuestionVisibleTrue(questionId, pageable);
         return new MsgEntity<>("SUCCESS", "Answers retrieved successfully", answers);
     }
 
     @Override
     public MsgEntity<AnswerEntity> updateAnswer(Integer answerId, String content, String userId) {
-        AnswerEntity answer = answerRepository.findByIdAndIsDeletedFalse(answerId);
+        AnswerEntity answer = answerRepository.findByIdAndIsDeletedFalseAndQuestionVisibleTrue(answerId);
         if (answer == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Answer not found");
         }
@@ -75,7 +84,7 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Override
     public MsgEntity<String> deleteAnswer(Integer answerId, String userId) {
-        AnswerEntity answer = answerRepository.findByIdAndIsDeletedFalse(answerId);
+        AnswerEntity answer = answerRepository.findByIdAndIsDeletedFalseAndQuestionVisibleTrue(answerId);
         if (answer == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Answer not found");
         }
@@ -94,7 +103,7 @@ public class AnswerServiceImpl implements AnswerService {
     @Override
     public MsgEntity<Page<AnswerEntity>> getAnswersByUserId(String username, Integer page, Integer pageSize) {
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
-        Page<AnswerEntity> answers = answerRepository.findByUserIdAndIsDeletedFalse(username, pageable);
+        Page<AnswerEntity> answers = answerRepository.findByUserIdAndIsDeletedFalseAndQuestionVisibleTrue(username, pageable);
         if (answers == null || answers.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No answers found for the provided user ID");
         }
@@ -109,7 +118,7 @@ public class AnswerServiceImpl implements AnswerService {
     @Override
     public MsgEntity<Page<AnswerEntity>> getAllAnswers(Integer page, Integer pageSize) {
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
-        Page<AnswerEntity> answers = answerRepository.findByIsDeletedFalse(pageable);
+        Page<AnswerEntity> answers = answerRepository.findByIsDeletedFalseAndQuestionVisibleTrue(pageable);
         if (answers == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No answers found");
         }
@@ -122,10 +131,20 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Override
     public AnswerEntity getAnswerById(Integer answerId) {
-        AnswerEntity answer = answerRepository.findByIdAndIsDeletedFalse(answerId);
+        AnswerEntity answer = answerRepository.findByIdAndIsDeletedFalseAndQuestionVisibleTrue(answerId);
         if (answer == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Answer not found");
         }
         return answer;
+    }
+
+    @Override
+    public int makeAnswerVisible(Integer questionId, boolean visibility) {
+        List<AnswerEntity> answers = answerRepository.findByQuestionIdAndQuestionVisibleTrue(questionId);
+        for (AnswerEntity answer : answers) {
+            answer.setQuestionVisible(visibility);
+        }
+        answerRepository.saveAll(answers);
+        return answers.size();
     }
 }

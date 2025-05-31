@@ -39,6 +39,9 @@ public class AnswerEntity {
   @Field("comment_count")
   private Integer commentCount = 0;
 
+  @Field("question_visible")
+  private Boolean questionVisible = true;
+
   // 非持久化字段
 
   private QuestionEntity question;
