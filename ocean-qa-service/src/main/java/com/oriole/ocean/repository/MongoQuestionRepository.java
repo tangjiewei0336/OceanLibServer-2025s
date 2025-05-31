@@ -1,13 +1,14 @@
 package com.oriole.ocean.repository;
 
 import com.oriole.ocean.common.po.mongo.QuestionEntity;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.util.List;
 
-public interface MongoQuestionRepository extends MongoRepository<QuestionEntity, String> {
+public interface MongoQuestionRepository extends MongoRepository<QuestionEntity, ObjectId> {
 
     // 查询所有未删除且不是草稿的问题
     Page<QuestionEntity> findByIsDeletedFalseAndIsHiddenFalseAndIsPostedTrue(Pageable pageable);

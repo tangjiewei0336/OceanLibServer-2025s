@@ -33,6 +33,9 @@ public class AnswerEntity {
   @Field("like_count")
   private Integer likeCount = 0;
 
+  @Field("dislike_count")
+  private Integer dislikeCount = 0;
+
   @Field("comment_count")
   private Integer commentCount = 0;
 

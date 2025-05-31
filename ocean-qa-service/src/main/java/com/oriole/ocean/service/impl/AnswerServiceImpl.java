@@ -5,6 +5,7 @@ import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.repository.AnswerRepository;
 import com.oriole.ocean.service.AnswerService;
 import com.oriole.ocean.service.QuestionService;
+import com.oriole.ocean.service.SequenceGeneratorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -23,6 +24,8 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Autowired
     private QuestionService questionService;
+    @Autowired
+    private SequenceGeneratorService sequenceGeneratorService;
 
     @Autowired
     public AnswerServiceImpl(AnswerRepository answerRepository) {
@@ -32,6 +35,7 @@ public class AnswerServiceImpl implements AnswerService {
     @Override
     public MsgEntity<Integer> submitAnswer(Integer questionId, String content, String userId) {
         AnswerEntity answer = new AnswerEntity();
+        answer.setId(sequenceGeneratorService.getNextSequence("answer"));
         answer.setQuestionId(questionId);
         answer.setUserId(userId);
         answer.setContent(content);
