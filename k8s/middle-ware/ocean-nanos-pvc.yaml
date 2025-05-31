@@ -1,0 +1,12 @@
+# nacos-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nacos-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi  # 根据实际需求调整大小
+  storageClassName: standard  # 使用集群中可用的存储类

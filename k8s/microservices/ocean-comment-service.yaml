@@ -17,6 +17,15 @@ spec:
           image: boyuzhu4216/ocean-comment-service:v1.0
           ports:
             - containerPort: 8082
+          resources:
+            requests:
+              cpu: "150m"   
+              memory: "256Mi" 
+            limits:
+              cpu: "600m"  
+              memory: "512Mi" 
+
+
 
 
 ---

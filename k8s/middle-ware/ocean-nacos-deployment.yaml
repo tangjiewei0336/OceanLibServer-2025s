@@ -20,6 +20,7 @@ spec:
             - containerPort: 8848
           command: ["sh", "-c"]
           args: ["sh bin/startup.sh -m standalone && tail -f /dev/null"]
+          
 
 ---
 apiVersion: v1

@@ -17,6 +17,14 @@ spec:
           image: boyuzhu4216/ocean-user-behavior-service:v1.0
           ports:
             - containerPort: 8088
+          resources:
+            requests:
+              cpu: "150m"   
+              memory: "256Mi" 
+            limits:
+              cpu: "600m"  
+              memory: "512Mi" 
+
 
 ---
 

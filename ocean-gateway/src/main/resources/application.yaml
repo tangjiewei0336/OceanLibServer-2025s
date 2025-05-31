@@ -11,7 +11,8 @@ spring:
         file-extension: yaml
         group: DEFAULT_GROUP
       discovery:
-        server-addr: ocean-nacos:8848
+        server-addr: 192.168.31.6:8848
+
     gateway:
       routes:
         - id: login
