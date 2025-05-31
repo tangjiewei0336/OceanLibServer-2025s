@@ -5,11 +5,14 @@ import com.oriole.ocean.common.po.mongo.QuestionEntity;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.repository.AnswerRepository;
 import com.oriole.ocean.service.QuestionService;
+import com.oriole.ocean.service.SequenceGeneratorService;
+import com.oriole.ocean.common.service.UserBehaviorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -20,8 +23,10 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class AnswerServiceImplTest {
 
     @Mock
@@ -30,12 +35,14 @@ class AnswerServiceImplTest {
     @Mock
     private QuestionService questionService;
 
-    @InjectMocks
+    @Mock
+    private SequenceGeneratorService sequenceGeneratorService;
+
     private AnswerServiceImpl answerService;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        answerService = new AnswerServiceImpl(answerRepository, questionService, sequenceGeneratorService);
     }
 
     @Test
@@ -44,6 +51,19 @@ class AnswerServiceImplTest {
         Integer questionId = 1;
         String content = "Test answer content";
         String userId = "user123";
+        
+        // Mock question
+        QuestionEntity question = new QuestionEntity();
+        question.setBindId(questionId);
+        question.setIsPosted(true);
+        question.setIsDeleted(false);
+        question.setIsHidden(false);
+        when(questionService.getQuestionById(questionId)).thenReturn(question);
+        
+        // Mock sequence generator
+        when(sequenceGeneratorService.getNextSequence("answer")).thenReturn(1);
+        
+        // Mock answer save
         AnswerEntity savedAnswer = new AnswerEntity();
         savedAnswer.setId(1);
         when(answerRepository.save(any(AnswerEntity.class))).thenReturn(savedAnswer);
@@ -53,9 +73,38 @@ class AnswerServiceImplTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals("SUCCESS", result.getCode());
-        assertEquals("1", result.getCode());
+        assertEquals("Answer submitted successfully", result.getCode());
+        assertEquals(1, result.getMsg());
+        verify(questionService, times(1)).getQuestionById(questionId);
+        verify(sequenceGeneratorService, times(1)).getNextSequence("answer");
         verify(answerRepository, times(1)).save(any(AnswerEntity.class));
+    }
+
+    @Test
+    void submitAnswer_QuestionNotVisible() {
+        // Arrange
+        Integer questionId = 1;
+        String content = "Test answer content";
+        String userId = "user123";
+        
+        // Mock question that is not visible
+        QuestionEntity question = new QuestionEntity();
+        question.setBindId(questionId);
+        question.setIsPosted(false);  // Question is not posted
+        question.setIsDeleted(false);
+        question.setIsHidden(false);
+        when(questionService.getQuestionById(questionId)).thenReturn(question);
+
+        // Act
+        MsgEntity<Integer> result = answerService.submitAnswer(questionId, content, userId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("FAIL", result.getState());
+        assertEquals("Question not visible", result.getCode());
+        assertEquals(-1, result.getMsg());
+        verify(questionService, times(1)).getQuestionById(questionId);
+        verify(answerRepository, never()).save(any(AnswerEntity.class));
     }
 
     @Test
@@ -74,7 +123,7 @@ class AnswerServiceImplTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals("SUCCESS", result.getCode());
+        assertEquals("Answers retrieved successfully", result.getCode());
         assertEquals(2, result.getMsg().getTotalElements());
         verify(answerRepository, times(1)).findByQuestionIdAndIsDeletedFalseAndQuestionVisibleTrue(eq(questionId), any(Pageable.class));
     }
@@ -96,7 +145,7 @@ class AnswerServiceImplTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals("SUCCESS", result.getCode());
+        assertEquals("Answer updated successfully", result.getCode());
         verify(answerRepository, times(1)).save(any(AnswerEntity.class));
     }
 
@@ -146,7 +195,7 @@ class AnswerServiceImplTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals("SUCCESS", result.getCode());
+        assertEquals("Answer deleted successfully", result.getCode());
         verify(answerRepository, times(1)).save(any(AnswerEntity.class));
     }
 
@@ -167,7 +216,7 @@ class AnswerServiceImplTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals("SUCCESS", result.getCode());
+        assertEquals("Answers retrieved successfully", result.getCode());
         assertEquals(2, result.getMsg().getTotalElements());
         verify(answerRepository, times(1)).findByUserIdAndIsDeletedFalseAndQuestionVisibleTrue(eq(username), any(Pageable.class));
     }
@@ -187,7 +236,7 @@ class AnswerServiceImplTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals("SUCCESS", result.getCode());
+        assertEquals("All answers retrieved successfully", result.getCode());
         assertEquals(2, result.getMsg().getTotalElements());
         verify(answerRepository, times(1)).findByIsDeletedFalseAndQuestionVisibleTrue(any(Pageable.class));
     }

@@ -23,16 +23,16 @@ import java.util.List;
 public class AnswerServiceImpl implements AnswerService {
 
     private final AnswerRepository answerRepository;
+    private final QuestionService questionService;
+    private final SequenceGeneratorService sequenceGeneratorService;
 
     @Autowired
-    private QuestionService questionService;
-
-    @Autowired
-    private SequenceGeneratorService sequenceGeneratorService;
-
-    @Autowired
-    public AnswerServiceImpl(AnswerRepository answerRepository) {
+    public AnswerServiceImpl(AnswerRepository answerRepository, 
+                           QuestionService questionService,
+                           SequenceGeneratorService sequenceGeneratorService) {
         this.answerRepository = answerRepository;
+        this.questionService = questionService;
+        this.sequenceGeneratorService = sequenceGeneratorService;
     }
 
     @Override

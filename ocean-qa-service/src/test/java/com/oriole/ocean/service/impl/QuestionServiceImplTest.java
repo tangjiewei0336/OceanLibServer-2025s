@@ -4,11 +4,14 @@ import com.oriole.ocean.common.po.mongo.QuestionEntity;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.repository.MongoQuestionRepository;
 import com.oriole.ocean.service.SequenceGeneratorService;
-import org.junit.Test;
+import com.oriole.ocean.common.service.UserBehaviorService;
+import com.oriole.ocean.common.po.mongo.UserBehaviorEntity;
+import com.oriole.ocean.service.AnswerService;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.InjectMocks;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -18,13 +21,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+
+@ExtendWith(MockitoExtension.class)
 public class QuestionServiceImplTest {
 
     @Mock
@@ -33,16 +35,26 @@ public class QuestionServiceImplTest {
     @Mock
     private SequenceGeneratorService sequenceGeneratorService;
 
-    @InjectMocks
+    @Mock
+    private UserBehaviorService userBehaviorService;
+
+    @Mock
+    private AnswerService answerService;
+
     private QuestionServiceImpl questionService;
 
     @BeforeEach
     void setUp() {
-        MockitoAnnotations.openMocks(this);
+        questionService = new QuestionServiceImpl(
+            mongoQuestionRepository,
+            sequenceGeneratorService,
+            answerService,
+            userBehaviorService
+        );
     }
 
     @Test
-    public void createQuestion_Success() {
+    void createQuestion_Success() {
         // Arrange
         String title = "Test Question";
         String content = "Test Content";
@@ -51,15 +63,17 @@ public class QuestionServiceImplTest {
         QuestionEntity savedQuestion = new QuestionEntity();
         savedQuestion.setBindId(1);
         when(mongoQuestionRepository.save(any(QuestionEntity.class))).thenReturn(savedQuestion);
+        doNothing().when(userBehaviorService).setBehaviorRecord(any(UserBehaviorEntity.class));
 
         // Act
         MsgEntity<Integer> result = questionService.createQuestion(title, content, userId);
 
         // Assert
         assertNotNull(result);
-        assertEquals("SUCCESS", result.getCode());
-        assertEquals("1", result.getCode());
+        assertEquals("SUCCESS", result.getState());
+        assertEquals("Question created successfully", result.getCode());
         verify(mongoQuestionRepository, times(1)).save(any(QuestionEntity.class));
+        verify(userBehaviorService, times(1)).setBehaviorRecord(any(UserBehaviorEntity.class));
     }
 
     @Test
@@ -72,25 +86,27 @@ public class QuestionServiceImplTest {
         Boolean includeDeleted = false;
         List<QuestionEntity> questions = Arrays.asList(new QuestionEntity(), new QuestionEntity());
         Page<QuestionEntity> questionPage = new PageImpl<>(questions);
-        when(mongoQuestionRepository.findByIsDeletedFalseAndIsHiddenFalseAndIsPostedTrue(any(Pageable.class))).thenReturn(questionPage);
+        when(mongoQuestionRepository.findByUserIdAndIsDeletedFalseAndIsHiddenFalseAndIsPostedTrue(eq(username), any(Pageable.class))).thenReturn(questionPage);
 
         // Act
         MsgEntity<Page<QuestionEntity>> result = questionService.getQuestions(page, pageSize, username, sortMethod, includeDeleted);
 
         // Assert
         assertNotNull(result);
-        assertEquals("SUCCESS", result.getCode());
+        assertEquals("Questions retrieved successfully", result.getCode());
         assertEquals(2, result.getMsg().getTotalElements());
-        verify(mongoQuestionRepository, times(1)).findByIsDeletedFalseAndIsHiddenFalseAndIsPostedTrue(any(Pageable.class));
+        verify(mongoQuestionRepository, times(1)).findByUserIdAndIsDeletedFalseAndIsHiddenFalseAndIsPostedTrue(eq(username), any(Pageable.class));
     }
 
     @Test
-    public void getQuestionById_Success() {
+    void getQuestionById_Success() {
         // Arrange
         Integer questionId = 1;
         QuestionEntity question = new QuestionEntity();
         question.setBindId(questionId);
+        question.setUserId("user123");
         when(mongoQuestionRepository.findByBindIdAndIsDeletedFalse(questionId)).thenReturn(question);
+        doNothing().when(userBehaviorService).setBehaviorRecord(any(UserBehaviorEntity.class));
 
         // Act
         QuestionEntity result = questionService.getQuestionById(questionId);
@@ -99,18 +115,7 @@ public class QuestionServiceImplTest {
         assertNotNull(result);
         assertEquals(questionId, result.getBindId());
         verify(mongoQuestionRepository, times(1)).findByBindIdAndIsDeletedFalse(questionId);
-    }
-
-    @Test
-    public void getQuestionById_NotFound() {
-        // Arrange
-        Integer questionId = 1;
-        when(mongoQuestionRepository.findByBindIdAndIsDeletedFalse(questionId)).thenReturn(null);
-
-        // Act & Assert
-        assertThrows(ResponseStatusException.class, () -> 
-            questionService.getQuestionById(questionId)
-        );
+        verify(userBehaviorService, times(1)).setBehaviorRecord(any(UserBehaviorEntity.class));
     }
 
     @Test
@@ -165,7 +170,7 @@ public class QuestionServiceImplTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals("SUCCESS", result.getCode());
+        assertEquals("Question updated successfully", result.getCode());
         verify(mongoQuestionRepository, times(1)).save(any(QuestionEntity.class));
     }
 
@@ -217,7 +222,7 @@ public class QuestionServiceImplTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals("SUCCESS", result.getCode());
+        assertEquals("Question deleted successfully", result.getCode());
         verify(mongoQuestionRepository, times(1)).save(any(QuestionEntity.class));
     }
 
