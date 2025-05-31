@@ -82,10 +82,12 @@ public class QuestionController {
             @NotNull @ApiParam(value = "每页显示的问题数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
         MsgEntity<Page<QuestionEntity>> result = null;
 
+        boolean includeDeleted = authUser.isAdmin() || authUser.isSuperAdmin();
+
         if (username != null && !username.isEmpty()) {
-            result = questionService.getQuestions(page, pageSize, username, sort, false);
+            result = questionService.getQuestions(page, pageSize, username, sort, includeDeleted);
         } else {
-            result = questionService.getQuestions(page, pageSize, null, sort, false);
+            result = questionService.getQuestions(page, pageSize, null, sort, includeDeleted);
         }
 
         if (result == null) {
@@ -161,12 +163,14 @@ public class QuestionController {
 
         QuestionEntity question = questionService.getQuestionById(questionId);
 
-        // 记录浏览数据
-        userBehaviorService.setBehaviorRecord(new UserBehaviorEntity(questionId, MainType.QUESTION, authUser.getUsername(), BehaviorType.DO_READ));
-
         if (question == null) {
             return ResponseEntity.status(404).body(new MsgEntity<>("ERROR", "Question not found", null));
+        }   
+
+        if(!question.getIsPosted() && !question.getUserId().equals(authUser.getUsername()) && (!authUser.isAdmin() && !authUser.isSuperAdmin())){
+            return ResponseEntity.status(404).body(new MsgEntity<>("ERROR", "You are not the owner of this question", null));
         }
+
         MsgEntity<QuestionEntity> result = new MsgEntity<>("SUCCESS", "1", question);
         return ResponseEntity.ok(result);
     }
@@ -196,5 +200,20 @@ public class QuestionController {
     public MsgEntity<ArrayList<String>> suggestTitle(@RequestParam String keyword, @RequestParam Integer rows) {
         ArrayList<String> suggests = eSearchService.suggestTitle(keyword, rows);
         return new MsgEntity<>("SUCCESS", "1", suggests);
+    }
+
+    @ApiOperation(value = "获取我的草稿列表", nickname = "getMyDrafts", notes = "分页获取当前用户的草稿列表。", response = MsgEntity.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "返回草稿列表", response = MsgEntity.class),
+            @ApiResponse(code = 401, message = "未授权", response = Object.class),
+            @ApiResponse(code = 500, message = "服务器内部错误", response = Object.class)})
+    @GetMapping(value = "/myDrafts", produces = {"application/json"})
+    public ResponseEntity<MsgEntity<Page<QuestionEntity>>> getMyDrafts(
+            @AuthUser AuthUserEntity authUser,
+            @NotNull @ApiParam(value = "页码", required = true) @Valid @RequestParam(value = "page", required = true) Integer page,
+            @NotNull @ApiParam(value = "每页显示的问题数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
+        
+        MsgEntity<Page<QuestionEntity>> result = questionService.getMyDrafts(authUser.getUsername(), page, pageSize);
+        return ResponseEntity.ok(result);
     }
 }

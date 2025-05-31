@@ -25,10 +25,8 @@ public interface MongoQuestionRepository extends MongoRepository<QuestionEntity,
     // 查询指定用户的所有未删除且不是草稿的问题
     Page<QuestionEntity> findByUserIdAndIsHiddenFalseAndIsPostedTrue(String username, Pageable pageable);
 
-
     Page<QuestionEntity> findByIsHiddenFalseAndIsPostedTrue(Pageable pageable);
 
-
-
+    Page<QuestionEntity> findByUserIdAndIsPostedFalseAndIsHiddenFalseAndIsDeletedFalse(String userId, Pageable pageable);
 
 }

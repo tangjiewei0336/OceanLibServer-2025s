@@ -35,6 +35,7 @@ public class QaESearchServiceImpl {
                 .should(QueryBuilders.fuzzyQuery("content", keywords).fuzziness(Fuzziness.AUTO))
                 .should(QueryBuilders.fuzzyQuery("userId", keywords).fuzziness(Fuzziness.AUTO))
                 .must(QueryBuilders.multiMatchQuery(keywords, "title", "content", "userId"))
+                .must(QueryBuilders.matchQuery("isPosted", "true"))
                 .must(QueryBuilders.matchQuery("isHidden", "false"))
                 .must(QueryBuilders.matchQuery("isDeleted", "false")); //必须是已经被核准的才能被检索出来
 

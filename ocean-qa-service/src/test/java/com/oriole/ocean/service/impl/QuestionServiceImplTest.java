@@ -261,4 +261,25 @@ public class QuestionServiceImplTest {
             questionService.deleteQuestion(questionId, userId)
         );
     }
+
+    @Test
+    public void getMyDrafts_Success() {
+        // Arrange
+        String userId = "user123";
+        int page = 1;
+        int pageSize = 10;
+        List<QuestionEntity> drafts = Arrays.asList(new QuestionEntity(), new QuestionEntity());
+        Page<QuestionEntity> draftPage = new PageImpl<>(drafts);
+        when(mongoQuestionRepository.findByUserIdAndIsPostedFalseAndIsHiddenFalseAndIsDeletedFalse(eq(userId), any(Pageable.class))).thenReturn(draftPage);
+
+        // Act
+        MsgEntity<Page<QuestionEntity>> result = questionService.getMyDrafts(userId, page, pageSize);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals("SUCCESS", result.getState());
+        assertEquals("Drafts retrieved successfully", result.getCode());
+        assertEquals(2, result.getMsg().getTotalElements());
+        verify(mongoQuestionRepository, times(1)).findByUserIdAndIsPostedFalseAndIsHiddenFalseAndIsDeletedFalse(eq(userId), any(Pageable.class));
+    }
 } 

@@ -203,4 +203,16 @@ public class QuestionServiceImpl implements QuestionService {
 
         return new MsgEntity<>("SUCCESS", "Question deleted successfully", null);
     }
+
+    @Override
+    public MsgEntity<Page<QuestionEntity>> getMyDrafts(String userId, int page, int pageSize) {
+        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "updateTime"));
+        Page<QuestionEntity> drafts = mongoQuestionRepository.findByUserIdAndIsPostedFalseAndIsHiddenFalseAndIsDeletedFalse(userId, pageable);
+        
+        if (drafts == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to retrieve drafts");
+        }
+
+        return new MsgEntity<>("SUCCESS", "Drafts retrieved successfully", drafts);
+    }
 }
