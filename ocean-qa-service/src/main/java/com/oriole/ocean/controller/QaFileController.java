@@ -3,6 +3,8 @@ package com.oriole.ocean.controller;
 import com.aliyun.oss.model.CannedAccessControlList;
 import com.oriole.ocean.common.auth.AuthUser;
 import com.oriole.ocean.common.po.mysql.FileUploadTempEntity;
+import com.oriole.ocean.common.tools.JwtUtils;
+import com.oriole.ocean.common.vo.AuthUserEntity;
 import com.oriole.ocean.qaObjectStorage.AliOSSUtils;
 import com.oriole.ocean.common.vo.BusinessException;
 import com.oriole.ocean.common.vo.ImageFileEntity;
@@ -15,9 +17,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/qaService/qaFile")
@@ -32,7 +36,7 @@ public class QaFileController {
     private final static String[] allowPicFileType = new String[]{".PNG", ".JPG", ".JPEG", ".GIF"};
 
     @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
-    public MsgEntity<ImageFileEntity> uploadFile(@AuthUser String username,
+    public MsgEntity<ImageFileEntity> uploadFile(@AuthUser AuthUserEntity authUser,
                                                  @RequestParam(value = "uploadFile") MultipartFile uploadFile) throws Exception {
         String fileName = UUID.randomUUID().toString();
         if (uploadFile.isEmpty()) {
@@ -54,9 +58,18 @@ public class QaFileController {
             imageFileEntity.setFileSuffix(suffix);
 
             imageFileEntity.setSize((int) uploadFile.getSize());
-            imageFileEntity.setUploadUsername(username);
+            imageFileEntity.setUploadUsername(authUser.getUsername());
 
             return new MsgEntity<>("SUCCESS", "1", imageFileEntity);
         }
+    }
+
+    @RequestMapping(value = "/downloadFile/**", method = RequestMethod.GET)
+    //下载原始文件
+    public void downloadFile(HttpServletResponse response, HttpServletRequest request) throws Exception {
+        String path = request.getRequestURI().substring(request.getRequestURI().indexOf("/downloadFile/") + "/downloadFile/".length());
+        System.out.println(path);
+        String filename = path.substring(path.lastIndexOf("/") + 1);
+        aliOSSUtils.downloadToUserFromOSS(response, ossConfig.TEMP_DOCUMENT_PATH + path, filename);
     }
 }
