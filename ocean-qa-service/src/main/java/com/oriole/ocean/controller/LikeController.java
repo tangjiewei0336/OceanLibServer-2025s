@@ -172,7 +172,7 @@ public class LikeController {
             Query query = Query.query(Criteria.where("_id").is(answerId).and("type").is(MainType.ANSWER).and("doUsername").is(authUser.getUsername()).and("behaviorType").is(BehaviorType.DO_LIKE));
             UserBehaviorEntity existingLike = mongoTemplate.findOne(query, UserBehaviorEntity.class);
             if (existingLike != null && !existingLike.getIsCancel()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have already liked this answer");
+                return new MsgEntity<>("-1","ERRDUP", "你已经赞过了。");
             }
         }
 
@@ -181,7 +181,7 @@ public class LikeController {
             Query query = Query.query(Criteria.where("_id").is(answerId).and("type").is(MainType.ANSWER).and("doUsername").is(authUser.getUsername()).and("behaviorType").is(BehaviorType.DO_DISLIKE));
             UserBehaviorEntity existingDislike = mongoTemplate.findOne(query, UserBehaviorEntity.class);
             if (existingDislike != null && !existingDislike.getIsCancel()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have already disliked this answer");
+                return new MsgEntity<>("-1","ERRDUP", "你已经踩过了。");
             }
         }
 
