@@ -52,9 +52,10 @@ public class LikeController {
     @Autowired
     private MongoTemplate mongoTemplate;
 
+
     @ApiOperation(value = "评价一个问题", notes = "isLike参数为评价操作的分类（true表示为点赞操作，false表示为点踩操作），isCancel为是否为取消评价操作。如isLike为false，isCancel为true，则表示取消点踩操作")
     @PostMapping(value = "/evaluateQuestion", produces = {"application/json"})
-    public MsgEntity<Map<String, Integer>> evaluateQuestion(@AuthUser AuthUserEntity authUser, @ApiParam(value = "问题ID", required = true) @RequestParam Integer questionId, @ApiParam(value = "是否为取消操作", required = true) @RequestParam Boolean isCancel, @ApiParam(value = "是否为点赞操作", required = true) @RequestParam Boolean isLike) {
+    public MsgEntity<Object> evaluateQuestion(@AuthUser AuthUserEntity authUser, @ApiParam(value = "问题ID", required = true) @RequestParam Integer questionId, @ApiParam(value = "是否为取消操作", required = true) @RequestParam Boolean isCancel, @ApiParam(value = "是否为点赞操作", required = true) @RequestParam Boolean isLike) {
 
         // 获取问题信息
         QuestionEntity question = questionService.getQuestionById(questionId);
@@ -64,14 +65,14 @@ public class LikeController {
 
         // 检查是否是在评价自己的问题
         if (authUser.getUsername().equals(question.getUserId())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Cannot evaluate your own question");
+            return new MsgEntity<>("-1", "ERRSELEV", "不能评价自己的问题。");
         }
 
         // 检查是否已经点赞
         if (isLike && !isCancel) {
             UserBehaviorEntity existingLike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(questionId, MainType.QUESTION, authUser.getUsername(), BehaviorType.DO_LIKE));
             if (existingLike != null && !existingLike.getIsCancel()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have already liked this question");
+                return new MsgEntity<>("-1","ERRDUP", "你已经赞过了。");
             }
         }
 
@@ -79,7 +80,7 @@ public class LikeController {
         if (!isLike && !isCancel) {
             UserBehaviorEntity existingDislike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(questionId, MainType.QUESTION, authUser.getUsername(), BehaviorType.DO_DISLIKE));
             if (existingDislike != null && !existingDislike.getIsCancel()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have already disliked this question");
+                return new MsgEntity<>("-1","ERRDUP", "你已踩过了。");
             }
         }
 
@@ -87,7 +88,7 @@ public class LikeController {
         if (isLike && isCancel) {
             UserBehaviorEntity existingLike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(questionId, MainType.QUESTION, authUser.getUsername(), BehaviorType.DO_LIKE));
             if (existingLike == null || existingLike.getIsCancel()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have not liked this question yet");
+                return new MsgEntity<>("-1","ERRNOBE", "你还没赞呢。");
             }
         }
 
@@ -95,7 +96,7 @@ public class LikeController {
         if (!isLike && isCancel) {
             UserBehaviorEntity existingDislike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(questionId, MainType.QUESTION, authUser.getUsername(), BehaviorType.DO_DISLIKE));
             if (existingDislike == null || existingDislike.getIsCancel()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "You have not disliked this question yet");
+                return new MsgEntity<>("-1","ERRNOBE", "你还没踩呢。");
             }
         }
 
@@ -128,6 +129,7 @@ public class LikeController {
                 mongoTemplate.updateFirst(query, update, QuestionEntity.class);
             }
         } catch (BusinessException businessException) {
+            businessException.printStackTrace();
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, " Already recorded, Cannot repeat evaluation!");
         }
 
