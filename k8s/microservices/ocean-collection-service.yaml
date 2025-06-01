@@ -16,6 +16,10 @@ spec:
         - name: ocean-collection-service
           image: ligelic/ocean-collection-service:v1.0
           imagePullPolicy: Always
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "1"
           ports:
             - containerPort: 8081
 

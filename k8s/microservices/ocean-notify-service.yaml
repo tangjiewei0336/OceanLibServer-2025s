@@ -15,7 +15,10 @@ spec:
       containers:
         - name: ocean-notify-service
           image: ligelic/ocean-notify-service:v1.0
-          
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "1"
           ports:
             - containerPort: 8087
 

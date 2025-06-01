@@ -17,7 +17,10 @@ spec:
       containers:
         - name: ocean-gateway
           image: ligelic/ocean-gateway:v1.0
-          
+          resources:
+            limits:
+              memory: "512Mi"
+              cpu: "1"
           ports:
             - containerPort: 8080
 ---
