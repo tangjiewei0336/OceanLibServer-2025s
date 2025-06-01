@@ -93,6 +93,19 @@ public class QuestionController {
         if (result == null) {
             return ResponseEntity.badRequest().body(new MsgEntity<>("ERROR", "Failed to retrieve questions", null));
         }
+
+        // 为每个问题添加点赞状态
+        String currentUser = authUser.getUsername();
+        for (QuestionEntity question : result.getMsg().getContent()) {
+            UserBehaviorEntity likeQuery = new UserBehaviorEntity(question.getBindId(), MainType.QUESTION, currentUser, BehaviorType.DO_LIKE);
+            List<UserBehaviorEntity> likeBehaviors = userBehaviorService.findAllBehaviorRecords(likeQuery);
+            question.setIsLiked(!likeBehaviors.isEmpty());
+
+            UserBehaviorEntity dislikeQuery = new UserBehaviorEntity(question.getBindId(), MainType.QUESTION, currentUser, BehaviorType.DO_DISLIKE);
+            List<UserBehaviorEntity> dislikeBehaviors = userBehaviorService.findAllBehaviorRecords(dislikeQuery);
+            question.setIsDisliked(!dislikeBehaviors.isEmpty());
+        }
+
         return ResponseEntity.ok(result);
     }
 

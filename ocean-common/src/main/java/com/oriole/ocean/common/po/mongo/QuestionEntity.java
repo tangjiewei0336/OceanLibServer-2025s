@@ -64,5 +64,7 @@ public class QuestionEntity {
     private Integer dislikeCount = 0;
 
     // 非持久化字段
-    private boolean isLiked = false;
+    private Boolean isLiked = false;
+    private Boolean isDisliked = false;
+
 }
