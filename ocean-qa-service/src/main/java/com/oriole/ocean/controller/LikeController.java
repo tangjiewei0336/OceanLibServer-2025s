@@ -145,9 +145,9 @@ public class LikeController {
         // 获取更新后的问题信息
         question = questionService.getQuestionById(questionId);
         Map<String, Integer> result = new HashMap<>();
-        result.put("like_count", question.getLikeCount());
-        result.put("dislike_count", question.getDislikeCount());
-        result.put("net_count", question.getLikeCount() - question.getDislikeCount());
+        result.put("likeCount", question.getLikeCount());
+        result.put("dislikeCount", question.getDislikeCount());
+        result.put("netCount", question.getLikeCount() - question.getDislikeCount());
 
         return new MsgEntity<>("SUCCESS", "1", result);
     }
@@ -236,9 +236,9 @@ public class LikeController {
         // 获取更新后的回答信息
         answer = answerService.getAnswerById(answerId);
         Map<String, Integer> result = new HashMap<>();
-        result.put("like_count", answer.getLikeCount());
-        result.put("dislike_count", answer.getDislikeCount());
-        result.put("net_count", answer.getLikeCount() - answer.getDislikeCount());
+        result.put("likeCount", answer.getLikeCount());
+        result.put("dislikeCount", answer.getDislikeCount());
+        result.put("netCount", answer.getLikeCount() - answer.getDislikeCount());
 
         return new MsgEntity<>("SUCCESS", "1", result);
     }
