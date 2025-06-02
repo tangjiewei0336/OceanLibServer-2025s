@@ -313,6 +313,7 @@ public class CommentServiceImpl {
     public CommentsListEntity initCommentArea(Integer bindID, MainType mainType) {
         CommentsListEntity commentsListEntity = new CommentsListEntity(bindID, mainType);
         switch (mainType) {
+            case ANSWER:
             case DOCUMENT:
                 setFileComments(commentsListEntity, mainType);
                 break;
