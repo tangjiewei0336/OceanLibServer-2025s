@@ -11,6 +11,7 @@ import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.IndexOperations;
 import org.springframework.data.elasticsearch.core.document.Document;
@@ -19,14 +20,14 @@ import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 @Service
@@ -65,54 +66,11 @@ public class DataSyncServiceImpl implements DataSyncService {
             if (!exists) {
                 CreateIndexRequest request = new CreateIndexRequest(indexName);
                 
-                // 设置索引设置
-                request.settings(Settings.builder()
-                    .put("index.number_of_shards", 1)
-                    .put("index.number_of_replicas", 1)
-                    .put("analysis.analyzer.ik_smart.type", "custom")
-                    .put("analysis.analyzer.ik_smart.tokenizer", "ik_smart")
-                    .put("analysis.analyzer.ik_smart.filter", "lowercase,asciifolding"));
-
-                // 设置映射
-                String mapping = "{\n" +
-                    "  \"properties\": {\n" +
-                    "    \"bindId\": { \"type\": \"integer\" },\n" +
-                    "    \"userId\": { \"type\": \"keyword\" },\n" +
-                    "    \"title\": { \n" +
-                    "      \"type\": \"text\",\n" +
-                    "      \"analyzer\": \"ik_smart\",\n" +
-                    "      \"search_analyzer\": \"ik_smart\",\n" +
-                    "      \"fields\": {\n" +
-                    "        \"suggest\": {\n" +
-                    "          \"type\": \"completion\",\n" +
-                    "          \"analyzer\": \"ik_smart\",\n" +
-                    "          \"search_analyzer\": \"ik_smart\",\n" +
-                    "          \"preserve_separators\": true,\n" +
-                    "          \"preserve_position_increments\": true,\n" +
-                    "          \"max_input_length\": 100\n" +
-                    "        }\n" +
-                    "      }\n" +
-                    "    },\n" +
-                    "    \"content\": { \n" +
-                    "      \"type\": \"text\",\n" +
-                    "      \"analyzer\": \"ik_smart\",\n" +
-                    "      \"search_analyzer\": \"ik_smart\"\n" +
-                    "    },\n" +
-                    "    \"createTime\": { \"type\": \"date\" },\n" +
-                    "    \"updateTime\": { \"type\": \"date\" },\n" +
-                    "    \"isDeleted\": { \"type\": \"boolean\" },\n" +
-                    "    \"isPosted\": { \"type\": \"boolean\" },\n" +
-                    "    \"isHidden\": { \"type\": \"boolean\" },\n" +
-                    "    \"rewardPoints\": { \"type\": \"integer\" },\n" +
-                    "    \"answerCount\": { \"type\": \"integer\" },\n" +
-                    "    \"viewCount\": { \"type\": \"integer\" },\n" +
-                    "    \"tagIds\": { \"type\": \"keyword\" },\n" +
-                    "    \"attachmentIds\": { \"type\": \"keyword\" },\n" +
-                    "    \"isLiked\": { \"type\": \"boolean\" }\n" +
-                    "  }\n" +
-                    "}";
-
-                request.mapping(mapping, XContentType.JSON);
+                // 从配置文件加载索引配置
+                ClassPathResource resource = new ClassPathResource("es-index-config.json");
+                String mapping = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+                
+                request.source(mapping, XContentType.JSON);
                 client.indices().create(request, RequestOptions.DEFAULT);
                 logger.info("成功创建 ES 索引");
             } else {

@@ -1,0 +1,52 @@
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 1,
+    "analysis": {
+      "analyzer": {
+        "ik_smart": {
+          "type": "custom",
+          "tokenizer": "ik_smart",
+          "filter": ["lowercase", "asciifolding"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "bindId": { "type": "integer" },
+      "userId": { "type": "keyword" },
+      "title": { 
+        "type": "text",
+        "analyzer": "ik_smart",
+        "search_analyzer": "ik_smart",
+        "fields": {
+          "suggest": {
+            "type": "completion",
+            "analyzer": "ik_smart",
+            "search_analyzer": "ik_smart",
+            "preserve_separators": true,
+            "preserve_position_increments": true,
+            "max_input_length": 100
+          }
+        }
+      },
+      "content": { 
+        "type": "text",
+        "analyzer": "ik_smart",
+        "search_analyzer": "ik_smart"
+      },
+      "createTime": { "type": "date" },
+      "updateTime": { "type": "date" },
+      "isDeleted": { "type": "boolean" },
+      "isPosted": { "type": "boolean" },
+      "isHidden": { "type": "boolean" },
+      "rewardPoints": { "type": "integer" },
+      "answerCount": { "type": "integer" },
+      "viewCount": { "type": "integer" },
+      "tagIds": { "type": "keyword" },
+      "attachmentIds": { "type": "keyword" },
+      "isLiked": { "type": "boolean" }
+    }
+  }
+} 

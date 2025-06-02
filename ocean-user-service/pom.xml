@@ -113,6 +113,14 @@
             <artifactId>ocean-common</artifactId>
             <version>1.0-SNAPSHOT</version>
             <scope>compile</scope>
+
+            <exclusions>
+                <!--no es-->
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
