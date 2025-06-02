@@ -97,7 +97,7 @@ public class AnswerController {
     }
 
     // 我最近的回答
-    @ApiOperation(value = "获取我最近的回答", nickname = "getMyAnswers", notes = "获取我最近的回答", response = MsgEntity.class, tags = {"用户服务器/ocean-qa-service/AnswerController",})
+    @ApiOperation(value = "获取某个人最近的回答", nickname = "getMyAnswers", notes = "获取我最近的回答", response = MsgEntity.class, tags = {"用户服务器/ocean-qa-service/AnswerController",})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "返回我最近的回答", response = MsgEntity.class),
             @ApiResponse(code = 401, message = "未授权", response = Object.class),
@@ -106,9 +106,14 @@ public class AnswerController {
     public ResponseEntity<MsgEntity<Page<AnswerEntity>>> getMyAnswers(
             @AuthUser AuthUserEntity authUser,
             @NotNull @ApiParam(value = "页码", required = true) @Valid @RequestParam(value = "page", required = true) Integer page,
-            @NotNull @ApiParam(value = "每页显示的回答数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
+            @NotNull @ApiParam(value = "每页显示的回答数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize,
+            @ApiParam(value = "用户名", required = false) @Valid @RequestParam(value = "username", required = false) String username) {
 
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByUserId(authUser.getUsername(), page, pageSize);
+        if (username == null) {
+            username = authUser.getUsername();
+        }
+
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByUserId(username, page, pageSize);
         return ResponseEntity.ok(result);
     }
 
