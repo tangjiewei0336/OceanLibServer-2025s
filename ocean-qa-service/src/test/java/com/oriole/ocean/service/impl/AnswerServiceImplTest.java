@@ -119,7 +119,7 @@ class AnswerServiceImplTest {
                 .thenReturn(answerPage);
 
         // Act
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByQuestionId(questionId, page, pageSize);
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByQuestionId(questionId, page, pageSize, null);
 
         // Assert
         assertNotNull(result);
@@ -232,7 +232,7 @@ class AnswerServiceImplTest {
         when(questionService.getQuestionById(any())).thenReturn(new QuestionEntity());
 
         // Act
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAllAnswers(page, pageSize);
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAllAnswers(page, pageSize, null);
 
         // Assert
         assertNotNull(result);

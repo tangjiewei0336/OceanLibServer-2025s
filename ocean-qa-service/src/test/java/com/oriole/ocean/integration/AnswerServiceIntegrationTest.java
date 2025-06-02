@@ -83,7 +83,7 @@ public class AnswerServiceIntegrationTest {
         assertTrue(result.getMsg() > 0);
 
         // 验证答案是否保存成功
-        AnswerEntity savedAnswer = answerService.getAnswerById(result.getMsg());
+        AnswerEntity savedAnswer = answerService.getAnswerById(result.getMsg(), testUserId);
         assertNotNull(savedAnswer);
         assertEquals(content, savedAnswer.getContent());
         assertEquals(testUserId, savedAnswer.getUserId());
@@ -127,7 +127,7 @@ public class AnswerServiceIntegrationTest {
         }
 
         // 获取问题的答案
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByQuestionId(testQuestionId, 1, 3);
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByQuestionId(testQuestionId, 1, 3, testUserId);
 
         assertNotNull(result);
         assertEquals("SUCCESS", result.getState());
@@ -165,7 +165,7 @@ public class AnswerServiceIntegrationTest {
 
         // 验证答案已被删除
         assertThrows(ResponseStatusException.class, () ->
-            answerService.getAnswerById(testAnswerId)
+            answerService.getAnswerById(testAnswerId, testUserId)
         );
     }
 
@@ -216,7 +216,7 @@ public class AnswerServiceIntegrationTest {
         }
 
         // 获取所有答案
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAllAnswers(1, 3);
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAllAnswers(1, 3, testUserId);
 
         assertNotNull(result);
         assertEquals("SUCCESS", result.getState());
@@ -246,7 +246,21 @@ public class AnswerServiceIntegrationTest {
         assertEquals(6, updatedCount); // 5个新答案 + 1个setUp中创建的答案
 
         // 验证答案已隐藏
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByQuestionId(testQuestionId, 1, 10);
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByQuestionId(testQuestionId, 1, 10, testUserId);
         assertEquals(0, result.getMsg().getContent().size());
+
+        // 重新设置答案可见
+        updatedCount = answerService.makeAnswerVisible(testQuestionId, true);
+        assertEquals(6, updatedCount);
+
+        // 验证答案已重新可见
+        result = answerService.getAnswersByQuestionId(testQuestionId, 1, 10, testUserId);
+        assertEquals(6, result.getMsg().getContent().size());
+        
+        // 验证所有答案都存在
+        result.getMsg().getContent().forEach(answer -> {
+            assertNotNull(answer);
+            assertEquals(testQuestionId, answer.getQuestionId());
+        });
     }
 } 

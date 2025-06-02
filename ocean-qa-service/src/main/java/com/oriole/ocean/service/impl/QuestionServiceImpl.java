@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.Async;
 
 import java.util.Collections;
 import java.util.Date;
@@ -209,6 +210,7 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
+    @Async
     public void updateAnswerCount(Integer questionId, int delta) {
         QuestionEntity question = getQuestionById(questionId);
         if (question == null) {
@@ -219,10 +221,10 @@ public class QuestionServiceImpl implements QuestionService {
         int newCount = Math.max(0, question.getAnswerCount() + delta);
         question.setAnswerCount(newCount);
         mongoQuestionRepository.save(question);
-
     }
 
     @Override
+    @Async
     public void incrementViewCount(Integer questionId) {
         QuestionEntity question = getQuestionById(questionId);
         if (question == null) {
@@ -238,6 +240,5 @@ public class QuestionServiceImpl implements QuestionService {
             question.setViewCount(question.getViewCount() + 1);
             mongoQuestionRepository.save(question);
         }
-
     }
 }

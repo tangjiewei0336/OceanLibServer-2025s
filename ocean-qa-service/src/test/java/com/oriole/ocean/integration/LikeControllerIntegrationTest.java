@@ -112,13 +112,13 @@ public class LikeControllerIntegrationTest {
                 .thenReturn(Arrays.asList(EvaluateType.LIKE));
 
         // 执行点赞操作
-        MsgEntity<Map<String, Integer>> result = likeController.evaluateQuestion(
+        MsgEntity<Object> result = likeController.evaluateQuestion(
                 otherUser, testQuestionId, false, true);
 
         // 验证结果
         assertEquals("SUCCESS", result.getState());
         assertEquals("1", result.getCode());
-        Map<String, Integer> data = result.getMsg();
+        Map<String, Integer> data = (Map<String, Integer>) result.getMsg();
         assertEquals(1, data.get("like_count"));
         assertEquals(0, data.get("dislike_count"));
         assertEquals(1, data.get("net_count"));
@@ -139,13 +139,13 @@ public class LikeControllerIntegrationTest {
                 .thenReturn(Arrays.asList(EvaluateType.DISLIKE));
 
         // 执行点踩操作
-        MsgEntity<Map<String, Integer>> result = likeController.evaluateQuestion(
+        MsgEntity<Object> result = likeController.evaluateQuestion(
                 otherUser, testQuestionId, false, false);
 
         // 验证结果
         assertEquals("SUCCESS", result.getState());
         assertEquals("1", result.getCode());
-        Map<String, Integer> data = result.getMsg();
+        Map<String, Integer> data = (Map<String, Integer>) result.getMsg();
         assertEquals(0, data.get("like_count"));
         assertEquals(1, data.get("dislike_count"));
         assertEquals(-1, data.get("net_count"));
@@ -169,13 +169,13 @@ public class LikeControllerIntegrationTest {
         likeController.evaluateQuestion(otherUser, testQuestionId, false, true);
 
         // 取消点赞
-        MsgEntity<Map<String, Integer>> result = likeController.evaluateQuestion(
+        MsgEntity<Object> result = likeController.evaluateQuestion(
                 otherUser, testQuestionId, true, true);
 
         // 验证结果
         assertEquals("SUCCESS", result.getState());
         assertEquals("1", result.getCode());
-        Map<String, Integer> data = result.getMsg();
+        Map<String, Integer> data = (Map<String, Integer>) result.getMsg();
         assertEquals(0, data.get("like_count"));
         assertEquals(0, data.get("dislike_count"));
         assertEquals(0, data.get("net_count"));
@@ -215,7 +215,7 @@ public class LikeControllerIntegrationTest {
         assertEquals(1, data.get("net_count"));
 
         // 验证回答数据更新
-        AnswerEntity updatedAnswer = answerService.getAnswerById(testAnswerId);
+        AnswerEntity updatedAnswer = answerService.getAnswerById(testAnswerId, testUser.getUsername());
         assertEquals(1, updatedAnswer.getLikeCount());
         assertEquals(0, updatedAnswer.getDislikeCount());
 
@@ -242,7 +242,7 @@ public class LikeControllerIntegrationTest {
         assertEquals(-1, data.get("net_count"));
 
         // 验证回答数据更新
-        AnswerEntity updatedAnswer = answerService.getAnswerById(testAnswerId);
+        AnswerEntity updatedAnswer = answerService.getAnswerById(testAnswerId, testUser.getUsername());
         assertEquals(0, updatedAnswer.getLikeCount());
         assertEquals(1, updatedAnswer.getDislikeCount());
 

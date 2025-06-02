@@ -122,7 +122,7 @@ public class QuestionServiceImplTest {
         assertNotNull(result);
         assertEquals(questionId, result.getBindId());
         verify(mongoQuestionRepository, times(1)).findByBindIdAndIsDeletedFalse(questionId);
-        verify(userBehaviorService, times(1)).setBehaviorRecord(any(UserBehaviorEntity.class));
+        verify(questionService, times(1)).incrementViewCount(any());
     }
 
     @Test
