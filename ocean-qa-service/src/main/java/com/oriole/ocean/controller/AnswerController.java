@@ -63,7 +63,7 @@ public class AnswerController {
             @NotNull @ApiParam(value = "页码", required = true) @Valid @RequestParam(value = "page", required = true) Integer page,
             @NotNull @ApiParam(value = "每页显示的回答数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
 
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByQuestionId(questionId, page, pageSize);
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByQuestionId(questionId, page, pageSize, authUser.getUsername());
         return ResponseEntity.ok(result);
     }
 
@@ -123,7 +123,7 @@ public class AnswerController {
             @NotNull @ApiParam(value = "页码", required = true) @Valid @RequestParam(value = "page", required = true) Integer page,
             @NotNull @ApiParam(value = "每页显示的回答数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
 
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAllAnswers(page, pageSize);
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAllAnswers(page, pageSize, authUser.getUsername());
         return ResponseEntity.ok(result);
     }
 }

@@ -66,5 +66,6 @@ public class QuestionEntity {
     // 非持久化字段
     private Boolean isLiked = false;
     private Boolean isDisliked = false;
+    private String avatar;
 
 }

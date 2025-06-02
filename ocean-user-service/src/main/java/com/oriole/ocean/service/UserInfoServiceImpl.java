@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.oriole.ocean.common.enumerate.UserInfoLevel;
 import com.oriole.ocean.common.po.mysql.UserEntity;
 import com.oriole.ocean.common.po.mysql.UserExtraEntity;
+import com.oriole.ocean.common.service.UserInfoService;
 import com.oriole.ocean.common.vo.AuthUserEntity;
 import com.oriole.ocean.common.vo.BusinessException;
 import com.oriole.ocean.common.vo.MsgEntity;
@@ -15,6 +16,7 @@ import com.oriole.ocean.service.base.UserBaseInfoServiceImpl;
 import com.oriole.ocean.service.base.UserCertificationServiceImpl;
 import com.oriole.ocean.service.base.UserExtraInfoServiceImpl;
 import com.oriole.ocean.service.base.UserWalletServiceImpl;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,7 +25,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class UserInfoServiceImpl {
+@DubboService
+public class UserInfoServiceImpl implements UserInfoService {
     @Autowired
     UserBaseInfoServiceImpl userService;
     @Autowired

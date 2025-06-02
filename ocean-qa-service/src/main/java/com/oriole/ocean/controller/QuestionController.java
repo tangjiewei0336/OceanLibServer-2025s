@@ -3,11 +3,14 @@ package com.oriole.ocean.controller;
 import com.oriole.ocean.common.auth.AuthUser;
 import com.oriole.ocean.common.enumerate.BehaviorType;
 import com.oriole.ocean.common.enumerate.MainType;
+import com.oriole.ocean.common.enumerate.UserInfoLevel;
 import com.oriole.ocean.common.po.mongo.QuestionEntity;
 import com.oriole.ocean.common.po.mongo.AnswerEntity;
 import com.oriole.ocean.common.po.mongo.UserBehaviorEntity;
+import com.oriole.ocean.common.po.mysql.UserEntity;
 import com.oriole.ocean.common.service.UserBehaviorService;
 import com.oriole.ocean.common.service.UserWalletService;
+import com.oriole.ocean.common.service.UserInfoService;
 import com.oriole.ocean.common.vo.AuthUserEntity;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.service.QuestionService;
@@ -42,6 +45,9 @@ public class QuestionController {
     @DubboReference
     UserWalletService userWalletService;
 
+    @DubboReference
+    UserInfoService userInfoService;
+
     @Autowired
     QaESearchServiceImpl eSearchService;
 
@@ -65,6 +71,28 @@ public class QuestionController {
 
         MsgEntity<Integer> result = questionService.createQuestion(title, content, authUser.getUsername());
         return ResponseEntity.ok(result);
+    }
+
+    /**
+     * 补充问题的详细信息，包括点赞状态和用户头像
+     * @param question 问题实体
+     * @param currentUser 当前用户
+     */
+    private void enrichQuestionDetails(QuestionEntity question, String currentUser) {
+        // 添加点赞状态
+        UserBehaviorEntity likeQuery = new UserBehaviorEntity(question.getBindId(), MainType.QUESTION, currentUser, BehaviorType.DO_LIKE);
+        List<UserBehaviorEntity> likeBehaviors = userBehaviorService.findAllBehaviorRecords(likeQuery);
+        question.setIsLiked(!likeBehaviors.isEmpty());
+
+        UserBehaviorEntity dislikeQuery = new UserBehaviorEntity(question.getBindId(), MainType.QUESTION, currentUser, BehaviorType.DO_DISLIKE);
+        List<UserBehaviorEntity> dislikeBehaviors = userBehaviorService.findAllBehaviorRecords(dislikeQuery);
+        question.setIsDisliked(!dislikeBehaviors.isEmpty());
+
+        // 添加用户头像
+        UserEntity userInfo = userInfoService.getUserInfo(question.getUserId(), UserInfoLevel.LIMITED);
+        if (userInfo != null) {
+            question.setAvatar(userInfo.getAvatar());
+        }
     }
 
     @ApiOperation(value = "获取所有问题列表", nickname = "listGet", notes = "分页获取问题列表。", response = MsgEntity.class)
@@ -94,16 +122,10 @@ public class QuestionController {
             return ResponseEntity.badRequest().body(new MsgEntity<>("ERROR", "Failed to retrieve questions", null));
         }
 
-        // 为每个问题添加点赞状态
+        // 为每个问题添加详细信息
         String currentUser = authUser.getUsername();
         for (QuestionEntity question : result.getMsg().getContent()) {
-            UserBehaviorEntity likeQuery = new UserBehaviorEntity(question.getBindId(), MainType.QUESTION, currentUser, BehaviorType.DO_LIKE);
-            List<UserBehaviorEntity> likeBehaviors = userBehaviorService.findAllBehaviorRecords(likeQuery);
-            question.setIsLiked(!likeBehaviors.isEmpty());
-
-            UserBehaviorEntity dislikeQuery = new UserBehaviorEntity(question.getBindId(), MainType.QUESTION, currentUser, BehaviorType.DO_DISLIKE);
-            List<UserBehaviorEntity> dislikeBehaviors = userBehaviorService.findAllBehaviorRecords(dislikeQuery);
-            question.setIsDisliked(!dislikeBehaviors.isEmpty());
+            enrichQuestionDetails(question, currentUser);
         }
 
         return ResponseEntity.ok(result);
@@ -159,6 +181,10 @@ public class QuestionController {
         List<QuestionEntity> questions = new ArrayList<>();
         if (fileIDs.size() > 0) {
             questions = questionService.getQuestionByIds(fileIDs);
+            // 为每个问题添加详细信息
+            for (QuestionEntity question : questions) {
+                enrichQuestionDetails(question, username);
+            }
         }
         MsgEntity<List<QuestionEntity>> result = new MsgEntity<>("SUCCESS", "1", questions);
         return ResponseEntity.ok(result);
@@ -183,6 +209,9 @@ public class QuestionController {
         if(!question.getIsPosted() && !question.getUserId().equals(authUser.getUsername()) && (!authUser.isAdmin() && !authUser.isSuperAdmin())){
             return ResponseEntity.status(404).body(new MsgEntity<>("ERROR", "You are not the owner of this question", null));
         }
+
+        // 添加详细信息
+        enrichQuestionDetails(question, authUser.getUsername());
 
         MsgEntity<QuestionEntity> result = new MsgEntity<>("SUCCESS", "1", question);
         return ResponseEntity.ok(result);
@@ -227,6 +256,12 @@ public class QuestionController {
             @NotNull @ApiParam(value = "每页显示的问题数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
         
         MsgEntity<Page<QuestionEntity>> result = questionService.getMyDrafts(authUser.getUsername(), page, pageSize);
+        
+        // 为每个草稿添加详细信息
+        for (QuestionEntity question : result.getMsg().getContent()) {
+            enrichQuestionDetails(question, authUser.getUsername());
+        }
+        
         return ResponseEntity.ok(result);
     }
 }

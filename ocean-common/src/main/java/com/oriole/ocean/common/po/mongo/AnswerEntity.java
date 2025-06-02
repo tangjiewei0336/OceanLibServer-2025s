@@ -19,6 +19,7 @@ public class AnswerEntity {
   @Field("user_id")
   private String userId;
 
+  @Field("content")
   private String content;
 
   @Field("create_time")
@@ -30,6 +31,9 @@ public class AnswerEntity {
   @Field("is_deleted")
   private Boolean isDeleted = false;
 
+  @Field("question_visible")
+  private Boolean questionVisible = true;
+
   @Field("like_count")
   private Integer likeCount = 0;
 
@@ -38,11 +42,10 @@ public class AnswerEntity {
 
   @Field("comment_count")
   private Integer commentCount = 0;
-
-  @Field("question_visible")
-  private Boolean questionVisible = true;
-
+  
   // 非持久化字段
-
   private QuestionEntity question;
+  private Boolean isLiked = false;
+  private Boolean isDisliked = false;
+  private String avatar;
 }

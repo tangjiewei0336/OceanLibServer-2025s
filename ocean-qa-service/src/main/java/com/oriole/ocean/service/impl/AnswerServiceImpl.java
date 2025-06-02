@@ -1,12 +1,20 @@
 package com.oriole.ocean.service.impl;
 
+import com.oriole.ocean.common.enumerate.BehaviorType;
+import com.oriole.ocean.common.enumerate.MainType;
+import com.oriole.ocean.common.enumerate.UserInfoLevel;
 import com.oriole.ocean.common.po.mongo.AnswerEntity;
 import com.oriole.ocean.common.po.mongo.QuestionEntity;
+import com.oriole.ocean.common.po.mongo.UserBehaviorEntity;
+import com.oriole.ocean.common.po.mysql.UserEntity;
+import com.oriole.ocean.common.service.UserBehaviorService;
+import com.oriole.ocean.common.service.UserInfoService;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.repository.AnswerRepository;
 import com.oriole.ocean.service.AnswerService;
 import com.oriole.ocean.service.QuestionService;
 import com.oriole.ocean.service.SequenceGeneratorService;
+import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +34,12 @@ public class AnswerServiceImpl implements AnswerService {
     private final QuestionService questionService;
     private final SequenceGeneratorService sequenceGeneratorService;
 
+    @DubboReference
+    private UserBehaviorService userBehaviorService;
+
+    @DubboReference
+    private UserInfoService userInfoService;
+
     @Autowired
     public AnswerServiceImpl(AnswerRepository answerRepository, 
                            QuestionService questionService,
@@ -33,6 +47,28 @@ public class AnswerServiceImpl implements AnswerService {
         this.answerRepository = answerRepository;
         this.questionService = questionService;
         this.sequenceGeneratorService = sequenceGeneratorService;
+    }
+
+    /**
+     * 补充回答的详细信息，包括点赞状态和用户头像
+     * @param answer 回答实体
+     * @param currentUser 当前用户
+     */
+    private void enrichAnswerDetails(AnswerEntity answer, String currentUser) {
+        // 添加点赞状态
+        UserBehaviorEntity likeQuery = new UserBehaviorEntity(answer.getId(), MainType.ANSWER, currentUser, BehaviorType.DO_LIKE);
+        List<UserBehaviorEntity> likeBehaviors = userBehaviorService.findAllBehaviorRecords(likeQuery);
+        answer.setIsLiked(!likeBehaviors.isEmpty());
+
+        UserBehaviorEntity dislikeQuery = new UserBehaviorEntity(answer.getId(), MainType.ANSWER, currentUser, BehaviorType.DO_DISLIKE);
+        List<UserBehaviorEntity> dislikeBehaviors = userBehaviorService.findAllBehaviorRecords(dislikeQuery);
+        answer.setIsDisliked(!dislikeBehaviors.isEmpty());
+
+        // 添加用户头像
+        UserEntity userInfo = userInfoService.getUserInfo(answer.getUserId(), UserInfoLevel.LIMITED);
+        if (userInfo != null) {
+            answer.setAvatar(userInfo.getAvatar());
+        }
     }
 
     @Override
@@ -57,9 +93,15 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public MsgEntity<Page<AnswerEntity>> getAnswersByQuestionId(Integer questionId, int page, int pageSize) {
+    public MsgEntity<Page<AnswerEntity>> getAnswersByQuestionId(Integer questionId, int page, int pageSize, String username) {
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
         Page<AnswerEntity> answers = answerRepository.findByQuestionIdAndIsDeletedFalseAndQuestionVisibleTrue(questionId, pageable);
+        
+        // 为每个回答添加详细信息
+        for (AnswerEntity answer : answers) {
+            enrichAnswerDetails(answer, username); // 这里传入null是因为这个方法不需要用户信息
+        }
+        
         return new MsgEntity<>("SUCCESS", "Answers retrieved successfully", answers);
     }
 
@@ -107,34 +149,38 @@ public class AnswerServiceImpl implements AnswerService {
         if (answers == null || answers.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No answers found for the provided user ID");
         }
+        
         for (AnswerEntity answer : answers) {
-            // Assuming you have a method to get the question by ID
             answer.setQuestion(questionService.getQuestionById(answer.getQuestionId()));
+            enrichAnswerDetails(answer, username);
         }
 
         return new MsgEntity<>("SUCCESS", "Answers retrieved successfully", answers);
     }
 
     @Override
-    public MsgEntity<Page<AnswerEntity>> getAllAnswers(Integer page, Integer pageSize) {
+    public MsgEntity<Page<AnswerEntity>> getAllAnswers(Integer page, Integer pageSize, String username) {
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
         Page<AnswerEntity> answers = answerRepository.findByIsDeletedFalseAndQuestionVisibleTrue(pageable);
         if (answers == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No answers found");
         }
+        
         for (AnswerEntity answer : answers) {
             answer.setQuestion(questionService.getQuestionById(answer.getQuestionId()));
+            enrichAnswerDetails(answer, username); 
         }
 
         return new MsgEntity<>("SUCCESS", "All answers retrieved successfully", answers);
     }
 
     @Override
-    public AnswerEntity getAnswerById(Integer answerId) {
+    public AnswerEntity getAnswerById(Integer answerId, String username) {
         AnswerEntity answer = answerRepository.findByIdAndIsDeletedFalseAndQuestionVisibleTrue(answerId);
         if (answer == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Answer not found");
         }
+        enrichAnswerDetails(answer, username);
         return answer;
     }
 

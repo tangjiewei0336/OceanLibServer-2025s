@@ -9,22 +9,22 @@ import javax.validation.Valid;
 public interface AnswerService {
     MsgEntity<Integer> submitAnswer(Integer questionId, String content, String userId);
 
-    MsgEntity<Page<AnswerEntity>> getAnswersByQuestionId(Integer questionId, int page, int pageSize);
+    MsgEntity<Page<AnswerEntity>> getAnswersByQuestionId(Integer questionId, int page, int pageSize, String username);
 
     MsgEntity<AnswerEntity> updateAnswer(Integer answerId, String content, String userId);
 
     MsgEntity<String> deleteAnswer(Integer answerId, String userId);
 
-    MsgEntity<Page<AnswerEntity>> getAnswersByUserId(String username, @Valid Integer page, @Valid Integer pageSize);
+    MsgEntity<Page<AnswerEntity>> getAnswersByUserId(String username, Integer page, Integer pageSize);
 
-    MsgEntity<Page<AnswerEntity>> getAllAnswers(@Valid Integer page, @Valid Integer pageSize);
+    MsgEntity<Page<AnswerEntity>> getAllAnswers(Integer page, Integer pageSize, String username);
 
     /**
      * 根据回答ID获取回答信息
      * @param answerId 回答ID
      * @return 回答实体
      */
-    AnswerEntity getAnswerById(Integer answerId);
+    AnswerEntity getAnswerById(Integer answerId, String username);
 
     int makeAnswerVisible(Integer questionId, boolean visibility);
 }

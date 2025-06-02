@@ -157,7 +157,7 @@ public class LikeController {
     public MsgEntity<Object> evaluateAnswer(@AuthUser AuthUserEntity authUser, @ApiParam(value = "回答ID", required = true) @RequestParam Integer answerId, @ApiParam(value = "是否为取消操作", required = true) @RequestParam Boolean isCancel, @ApiParam(value = "是否为点赞操作", required = true) @RequestParam Boolean isLike) {
 
         // 获取回答信息
-        AnswerEntity answer = answerService.getAnswerById(answerId);
+        AnswerEntity answer = answerService.getAnswerById(answerId, authUser.getUsername());
         if (answer == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Answer not found");
         }
@@ -234,7 +234,7 @@ public class LikeController {
         }
 
         // 获取更新后的回答信息
-        answer = answerService.getAnswerById(answerId);
+        answer = answerService.getAnswerById(answerId, authUser.getUsername());
         Map<String, Integer> result = new HashMap<>();
         result.put("likeCount", answer.getLikeCount());
         result.put("dislikeCount", answer.getDislikeCount());
