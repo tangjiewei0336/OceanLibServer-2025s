@@ -63,11 +63,6 @@ public class LikeController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Question not found");
         }
 
-        // 检查是否是在评价自己的问题
-        if (authUser.getUsername().equals(question.getUserId())) {
-            return new MsgEntity<>("-1", "ERRSELEV", "不能评价自己的问题。");
-        }
-
         // 检查是否已经点赞
         if (isLike && !isCancel) {
             UserBehaviorEntity existingLike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(questionId, MainType.QUESTION, authUser.getUsername(), BehaviorType.DO_LIKE));
@@ -160,11 +155,6 @@ public class LikeController {
         AnswerEntity answer = answerService.getAnswerById(answerId, authUser.getUsername());
         if (answer == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Answer not found");
-        }
-
-        // 检查是否是在评价自己的回答
-        if (authUser.getUsername().equals(answer.getUserId())) {
-            return new MsgEntity<>("-1", "ERROR", "不能给自己的回答点赞或者点踩。");
         }
 
         // 检查是否已经点赞
