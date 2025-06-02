@@ -47,7 +47,7 @@ public class WebSecurityConfig {
 
             "/userInfoService/getUserLimitedInfo", //获取用户昵称和头像的有限信息接口
             "/userInfoService/checkSameUsername", //检查相同用户名
-
+            "/qaService/qaFile/downloadFile/**", //下载文件接口，允许匿名访问
 
             //为了提取下载链接，不在Header携带Token，而变为参数携带临时Token
             "/docFileService/downloadFile",
