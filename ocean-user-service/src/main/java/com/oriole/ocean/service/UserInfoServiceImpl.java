@@ -100,6 +100,9 @@ public class UserInfoServiceImpl implements UserInfoService {
                 userEntity.setIsValid(updatedInfo.getIsValid());
             }
 
+            System.out.print("Current User: " + userEntity);
+            System.out.print("Updated Info: " + updatedInfo);
+
             // 允许修改其他信息
             if (updatedInfo.getNickname() != null) {
                 userEntity.setNickname(updatedInfo.getNickname());
@@ -162,7 +165,11 @@ public class UserInfoServiceImpl implements UserInfoService {
         }
 
         // 更新用户信息到数据库
-        userService.updateById(userEntity);
+        // 执行更新
+        boolean result = userService.updateById(userEntity);
+        if (!result) {
+            System.out.print("User update did not affect any rows in the database.");
+        }
         userExtraService.saveOrUpdate(tempUserExtraEntity);
 
         return userEntity;
