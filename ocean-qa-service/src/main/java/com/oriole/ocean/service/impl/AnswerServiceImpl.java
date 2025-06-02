@@ -149,8 +149,8 @@ public class AnswerServiceImpl implements AnswerService {
     public MsgEntity<Page<AnswerEntity>> getAnswersByUserId(String username, Integer page, Integer pageSize) {
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
         Page<AnswerEntity> answers = answerRepository.findByUserIdAndIsDeletedFalseAndQuestionVisibleTrue(username, pageable);
-        if (answers == null || answers.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No answers found for the provided user ID");
+        if (answers == null) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to retrieve answers");
         }
         
         for (AnswerEntity answer : answers) {
