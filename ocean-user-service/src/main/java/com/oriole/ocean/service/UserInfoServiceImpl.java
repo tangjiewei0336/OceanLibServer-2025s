@@ -70,27 +70,14 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     public UserEntity updateUserInfo(AuthUserEntity authUser, UserEntity updatedInfo) {
+        // 检查用户是否存在
         UserEntity userEntity = userService.getById(updatedInfo.getUsername());
         if (userEntity == null) {
             throw new BusinessException("-1", "用户不存在");
         }
 
-        // 如果角色信息被修改，且操作者不是超级管理员，立即拒绝
-        if (updatedInfo.getRole() != null &&
-                !updatedInfo.getRole().equals(userEntity.getRole()) &&
-                !authUser.isSuperAdmin()) {
-            throw new BusinessException("-6", "无权限修改用户角色");
-        }
 
-        // 检查权限：管理员不能修改超级管理员的信息
-        if (authUser.isAdmin() && !authUser.isSuperAdmin() &&
-                userEntity.getRole() != null && userEntity.getRole().equals("superadmin")) {
-            throw new BusinessException("-5", "无权限修改超级管理员信息");
-        }
-
-        UserExtraEntity tempUserExtraEntity = userEntity.getUserExtraEntity();
-
-        // 超级管理员特有权限
+        // 超级管理员可以修改所有信息
         if (authUser.isSuperAdmin()) {
             if (updatedInfo.getRole() != null) {
                 userEntity.setRole(updatedInfo.getRole());
@@ -98,14 +85,22 @@ public class UserInfoServiceImpl implements UserInfoService {
             if (updatedInfo.getIsValid() != null) {
                 userEntity.setIsValid(updatedInfo.getIsValid());
             }
-        }
-
-        // 管理员权限 (包括超级管理员)
-        if (authUser.isAdmin()) {
-            // 这里的检查是多余的，因为我们在方法开始就已经检查了，但为了安全保险起见，可以保留
-            if (!authUser.isSuperAdmin() && updatedInfo.getRole() != null) {
+        } else if (authUser.isAdmin()) {
+            // 管理员只能修改非角色信息
+            if (updatedInfo.getRole() != null) {
                 throw new BusinessException("-6", "无权限修改用户角色");
             }
+
+            // 允许管理员修改 isValid 但需检查角色
+            if (updatedInfo.getIsValid() != null) {
+                if (userEntity.getRole() != null &&
+                        (userEntity.getRole().equals("admin") || userEntity.getRole().equals("superadmin"))) {
+                    throw new BusinessException("-4", "无权限封禁管理员或超级管理员");
+                }
+                userEntity.setIsValid(updatedInfo.getIsValid());
+            }
+
+            // 允许修改其他信息
             if (updatedInfo.getNickname() != null) {
                 userEntity.setNickname(updatedInfo.getNickname());
             }
@@ -126,50 +121,50 @@ public class UserInfoServiceImpl implements UserInfoService {
             }
 
             // 只有超级管理员能封禁管理员和超级管理员，普通管理员不能
-            if (!authUser.isSuperAdmin() && updatedInfo.getIsValid() != null) {
+            if (updatedInfo.getIsValid() != null) {
                 if (userEntity.getRole() != null &&
                         (userEntity.getRole().equals("admin") || userEntity.getRole().equals("superadmin"))) {
                     throw new BusinessException("-4", "无权限封禁管理员或超级管理员");
                 }
                 userEntity.setIsValid(updatedInfo.getIsValid());
             }
-
-            UserExtraEntity updateInfoExtraEntity = updatedInfo.getUserExtraEntity();
-
-            if (tempUserExtraEntity == null) {
-                tempUserExtraEntity = new UserExtraEntity();
-                tempUserExtraEntity.setUsername(userEntity.getUsername());
-                userEntity.setUserExtraEntity(tempUserExtraEntity);
-            }
-
-            if (updateInfoExtraEntity != null) {
-                if (updateInfoExtraEntity.getCollege() != null) {
-                    tempUserExtraEntity.setCollege(updateInfoExtraEntity.getCollege());
-                }
-                if (updateInfoExtraEntity.getMajor() != null) {
-                    tempUserExtraEntity.setMajor(updateInfoExtraEntity.getMajor());
-                }
-                if (updateInfoExtraEntity.getBirthday() != null) {
-                    tempUserExtraEntity.setBirthday(updateInfoExtraEntity.getBirthday());
-                }
-                if (updateInfoExtraEntity.getSex() != null) {
-                    tempUserExtraEntity.setSex(updateInfoExtraEntity.getSex());
-                }
-                if (updateInfoExtraEntity.getPersonalSignature() != null) {
-                    tempUserExtraEntity.setPersonalSignature(updateInfoExtraEntity.getPersonalSignature());
-                }
-            } else {
-                throw new BusinessException("-3", "用户附加信息为空");
-            }
         } else {
             throw new BusinessException("-2", "无权限更新此信息");
+        }
+
+        // 更新用户附加信息
+        UserExtraEntity tempUserExtraEntity = userEntity.getUserExtraEntity();
+        if (tempUserExtraEntity == null) {
+            tempUserExtraEntity = new UserExtraEntity();
+            tempUserExtraEntity.setUsername(userEntity.getUsername());
+            userEntity.setUserExtraEntity(tempUserExtraEntity);
+        }
+
+        UserExtraEntity updateInfoExtraEntity = updatedInfo.getUserExtraEntity();
+        if (updateInfoExtraEntity != null) {
+            if (updateInfoExtraEntity.getCollege() != null) {
+                tempUserExtraEntity.setCollege(updateInfoExtraEntity.getCollege());
+            }
+            if (updateInfoExtraEntity.getMajor() != null) {
+                tempUserExtraEntity.setMajor(updateInfoExtraEntity.getMajor());
+            }
+            if (updateInfoExtraEntity.getBirthday() != null) {
+                tempUserExtraEntity.setBirthday(updateInfoExtraEntity.getBirthday());
+            }
+            if (updateInfoExtraEntity.getSex() != null) {
+                tempUserExtraEntity.setSex(updateInfoExtraEntity.getSex());
+            }
+            if (updateInfoExtraEntity.getPersonalSignature() != null) {
+                tempUserExtraEntity.setPersonalSignature(updateInfoExtraEntity.getPersonalSignature());
+            }
+        } else {
+            throw new BusinessException("-3", "用户附加信息为空");
         }
 
         // 更新用户信息到数据库
         userService.updateById(userEntity);
         userExtraService.saveOrUpdate(tempUserExtraEntity);
 
-        // userExtraService.updateById(tempUserExtraEntity);
         return userEntity;
     }
 

@@ -73,7 +73,8 @@ public class UserInfoController {
     }
 
     @RequestMapping(value = "/updateUserInfo", method = RequestMethod.PUT)
-    public MsgEntity<UserEntity> updateUserInfo(@AuthUser AuthUserEntity authUser, @RequestBody UserEntity updatedInfo) {
+    public MsgEntity<UserEntity> updateUserInfo(@AuthUser AuthUserEntity authUser, @RequestParam String username, @RequestBody UserEntity updatedInfo) {
+        updatedInfo.setUsername(username);
         return new MsgEntity<>("SUCCESS", "1",
                 userInfoService.updateUserInfo(authUser, updatedInfo));
     }
