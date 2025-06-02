@@ -210,6 +210,13 @@ public class QuestionController {
             return ResponseEntity.status(404).body(new MsgEntity<>("ERROR", "You are not the owner of this question", null));
         }
 
+        // 记录用户查看行为
+        UserBehaviorEntity userBehavior = new UserBehaviorEntity(questionId, MainType.QUESTION, authUser.getUsername(), BehaviorType.DO_READ);
+        userBehaviorService.setBehaviorRecord(userBehavior);
+
+        // 增加浏览次数
+        questionService.incrementViewCount(questionId);
+
         // 添加详细信息
         enrichQuestionDetails(question, authUser.getUsername());
 

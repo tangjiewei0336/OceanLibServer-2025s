@@ -88,6 +88,7 @@ public class AnswerServiceImpl implements AnswerService {
         answer.setUpdateTime(new Date());
 
         AnswerEntity savedAnswer = answerRepository.save(answer);
+        questionService.updateAnswerCount(questionId, 1);
 
         return new MsgEntity<>("SUCCESS", "Answer submitted successfully", savedAnswer.getId());
     }
@@ -138,6 +139,8 @@ public class AnswerServiceImpl implements AnswerService {
         answer.setIsDeleted(true);
         answer.setUpdateTime(new Date());
         answerRepository.save(answer);
+
+        questionService.updateAnswerCount(answer.getQuestionId(), -1);
 
         return new MsgEntity<>("SUCCESS", "Answer deleted successfully", null);
     }

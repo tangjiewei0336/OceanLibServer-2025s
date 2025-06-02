@@ -59,8 +59,7 @@ public class QuestionServiceImpl implements QuestionService {
         QuestionEntity savedQuestion = mongoQuestionRepository.save(question);
 
         // Record user behavior for question creation
-        UserBehaviorEntity userBehavior = new UserBehaviorEntity(savedQuestion.getBindId(), MainType.QUESTION, userId, BehaviorType.DO_READ);
-        userBehaviorService.setBehaviorRecord(userBehavior);
+        incrementViewCount(savedQuestion.getBindId());
 
         return new MsgEntity<>("SUCCESS", "Question created successfully", savedQuestion.getBindId());
     }
@@ -120,15 +119,8 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public @Nullable QuestionEntity getQuestionById(Integer questionId) {
-        QuestionEntity question = mongoQuestionRepository.findByBindIdAndIsDeletedFalse(questionId);
-        
-        if (question != null) {
-            // Record user behavior for viewing question
-            UserBehaviorEntity userBehavior = new UserBehaviorEntity(questionId, MainType.QUESTION, question.getUserId(), BehaviorType.DO_READ);
-            userBehaviorService.setBehaviorRecord(userBehavior);
-        }
-        
-        return question;
+
+        return mongoQuestionRepository.findByBindIdAndIsDeletedFalse(questionId);
     }
 
     @Override
@@ -214,5 +206,38 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         return new MsgEntity<>("SUCCESS", "Drafts retrieved successfully", drafts);
+    }
+
+    @Override
+    public void updateAnswerCount(Integer questionId, int delta) {
+        QuestionEntity question = getQuestionById(questionId);
+        if (question == null) {
+            return;
+        }
+
+        // 更新回答数，确保不会小于0
+        int newCount = Math.max(0, question.getAnswerCount() + delta);
+        question.setAnswerCount(newCount);
+        mongoQuestionRepository.save(question);
+
+    }
+
+    @Override
+    public void incrementViewCount(Integer questionId) {
+        QuestionEntity question = getQuestionById(questionId);
+        if (question == null) {
+            return;
+        }
+
+        // 检查用户是否已经查看过这个问题
+        UserBehaviorEntity viewQuery = new UserBehaviorEntity(questionId, MainType.QUESTION, question.getUserId(), BehaviorType.DO_READ);
+        List<UserBehaviorEntity> viewBehaviors = userBehaviorService.findAllBehaviorRecords(viewQuery);
+        
+        // 如果用户还没有查看过这个问题，则增加浏览次数
+        if (viewBehaviors.isEmpty()) {
+            question.setViewCount(question.getViewCount() + 1);
+            mongoQuestionRepository.save(question);
+        }
+
     }
 }

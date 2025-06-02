@@ -21,4 +21,19 @@ public interface QuestionService {
     MsgEntity<String> deleteQuestion(Integer questionId, String userId);
 
     MsgEntity<Page<QuestionEntity>> getMyDrafts(String userId, int page, int pageSize);
+
+    /**
+     * 更新问题的回答数
+     *
+     * @param questionId 问题ID
+     * @param delta      回答数的变化量（正数增加，负数减少）
+     */
+    void updateAnswerCount(Integer questionId, int delta);
+
+    /**
+     * 增加问题的浏览次数
+     *
+     * @param questionId 问题ID
+     */
+    void incrementViewCount(Integer questionId);
 }
