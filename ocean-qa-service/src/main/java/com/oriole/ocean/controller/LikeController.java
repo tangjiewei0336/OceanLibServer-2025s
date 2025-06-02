@@ -169,8 +169,7 @@ public class LikeController {
 
         // 检查是否已经点赞
         if (isLike && !isCancel) {
-            Query query = Query.query(Criteria.where("_id").is(answerId).and("type").is(MainType.ANSWER).and("doUsername").is(authUser.getUsername()).and("behaviorType").is(BehaviorType.DO_LIKE));
-            UserBehaviorEntity existingLike = mongoTemplate.findOne(query, UserBehaviorEntity.class);
+            UserBehaviorEntity existingLike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(answerId, MainType.ANSWER, authUser.getUsername(), BehaviorType.DO_LIKE));
             if (existingLike != null && !existingLike.getIsCancel()) {
                 return new MsgEntity<>("-1","ERRDUP", "你已经赞过了。");
             }
@@ -178,8 +177,7 @@ public class LikeController {
 
         // 检查是否已经点踩
         if (!isLike && !isCancel) {
-            Query query = Query.query(Criteria.where("_id").is(answerId).and("type").is(MainType.ANSWER).and("doUsername").is(authUser.getUsername()).and("behaviorType").is(BehaviorType.DO_DISLIKE));
-            UserBehaviorEntity existingDislike = mongoTemplate.findOne(query, UserBehaviorEntity.class);
+            UserBehaviorEntity existingDislike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(answerId, MainType.ANSWER, authUser.getUsername(), BehaviorType.DO_DISLIKE));
             if (existingDislike != null && !existingDislike.getIsCancel()) {
                 return new MsgEntity<>("-1","ERRDUP", "你已经踩过了。");
             }
@@ -198,9 +196,8 @@ public class LikeController {
             switch (evaluate) {
                 case CANCEL_LIKE:
 
-                    Query query_cancel_like = Query.query(Criteria.where("_id").is(answerId).and("type").is(MainType.ANSWER).and("doUsername").is(authUser.getUsername()).and("behaviorType").is(BehaviorType.DO_LIKE));
-                    UserBehaviorEntity existingLike = mongoTemplate.findOne(query_cancel_like, UserBehaviorEntity.class);
-                    if (!(existingLike == null || existingLike.getIsCancel())) {
+                    UserBehaviorEntity existingLike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(answerId, MainType.ANSWER, authUser.getUsername(), BehaviorType.DO_LIKE));
+                    if (!(existingLike == null)) {
                         userBehaviorService.deleteBehaviorRecord(existingLike);
                         update.inc("like_count", -1);
                     }
@@ -209,9 +206,8 @@ public class LikeController {
                     update.inc("like_count", 1);
                     break;
                 case CANCEL_DISLIKE:
-                    Query cancel_dislike_query = Query.query(Criteria.where("_id").is(answerId).and("type").is(MainType.ANSWER).and("doUsername").is(authUser.getUsername()).and("behaviorType").is(BehaviorType.DO_DISLIKE));
-                    UserBehaviorEntity existingDislike = mongoTemplate.findOne(cancel_dislike_query, UserBehaviorEntity.class);
-                    if (!(existingDislike == null || existingDislike.getIsCancel())) {
+                    UserBehaviorEntity existingDislike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(answerId, MainType.ANSWER, authUser.getUsername(), BehaviorType.DO_DISLIKE));
+                    if (!(existingDislike == null)) {
                         update.inc("dislike_count", -1);
                         userBehaviorService.deleteBehaviorRecord(existingDislike);
                     }

@@ -81,10 +81,12 @@ public class QuestionController {
     private void enrichQuestionDetails(QuestionEntity question, String currentUser) {
         // 添加点赞状态
         UserBehaviorEntity likeQuery = new UserBehaviorEntity(question.getBindId(), MainType.QUESTION, currentUser, BehaviorType.DO_LIKE);
+        likeQuery.setIsCancel(false);
         List<UserBehaviorEntity> likeBehaviors = userBehaviorService.findAllBehaviorRecords(likeQuery);
         question.setIsLiked(!likeBehaviors.isEmpty());
 
         UserBehaviorEntity dislikeQuery = new UserBehaviorEntity(question.getBindId(), MainType.QUESTION, currentUser, BehaviorType.DO_DISLIKE);
+        dislikeQuery.setIsCancel(false);
         List<UserBehaviorEntity> dislikeBehaviors = userBehaviorService.findAllBehaviorRecords(dislikeQuery);
         question.setIsDisliked(!dislikeBehaviors.isEmpty());
 
@@ -201,6 +203,7 @@ public class QuestionController {
             @NotNull @ApiParam(value = "问题的 ID", required = true) @Valid @RequestParam(value = "questionId", required = true) Integer questionId) {
 
         QuestionEntity question = questionService.getQuestionById(questionId);
+        question.setViewCount(question.getViewCount() + 1); // 增加浏览次数
 
         if (question == null) {
             return ResponseEntity.status(404).body(new MsgEntity<>("ERROR", "Question not found", null));
