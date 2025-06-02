@@ -76,6 +76,7 @@ public class UserInfoServiceImpl implements UserInfoService {
             throw new BusinessException("-1", "用户不存在");
         }
 
+
         // 超级管理员可以修改所有信息
         if (authUser.isSuperAdmin()) {
             if (updatedInfo.getRole() != null) {
@@ -88,6 +89,15 @@ public class UserInfoServiceImpl implements UserInfoService {
             // 管理员只能修改非角色信息
             if (updatedInfo.getRole() != null) {
                 throw new BusinessException("-6", "无权限修改用户角色");
+            }
+
+            // 允许管理员修改 isValid 但需检查角色
+            if (updatedInfo.getIsValid() != null) {
+                if (userEntity.getRole() != null &&
+                        (userEntity.getRole().equals("admin") || userEntity.getRole().equals("superadmin"))) {
+                    throw new BusinessException("-4", "无权限封禁管理员或超级管理员");
+                }
+                userEntity.setIsValid(updatedInfo.getIsValid());
             }
 
             // 允许修改其他信息
