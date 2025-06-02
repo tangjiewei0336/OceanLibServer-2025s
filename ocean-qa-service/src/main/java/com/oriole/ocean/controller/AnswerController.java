@@ -78,7 +78,8 @@ public class AnswerController {
             @NotNull @ApiParam(value = "要修改的回答 ID", required = true) @Valid @RequestParam(value = "answerId", required = true) Integer answerId,
             @NotNull @ApiParam(value = "修改后的回答内容", required = true) @Valid @RequestParam(value = "content", required = true) String content) {
 
-        MsgEntity<AnswerEntity> result = answerService.updateAnswer(answerId, content, authUser.getUsername());
+
+        MsgEntity<AnswerEntity> result = answerService.updateAnswer(answerId, content, authUser.getUsername(), authUser.isAdmin() || authUser.isSuperAdmin());
         return ResponseEntity.ok(result);
     }
 

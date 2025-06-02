@@ -107,15 +107,16 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public MsgEntity<AnswerEntity> updateAnswer(Integer answerId, String content, String userId) {
+    public MsgEntity<AnswerEntity> updateAnswer(Integer answerId, String content, String userId, boolean admin) {
         AnswerEntity answer = answerRepository.findByIdAndIsDeletedFalseAndQuestionVisibleTrue(answerId);
         if (answer == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Answer not found");
         }
 
-
         if (!answer.getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to update this answer");
+            if(!admin) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to update this answer");
+            }
         }
 
         answer.setContent(content);

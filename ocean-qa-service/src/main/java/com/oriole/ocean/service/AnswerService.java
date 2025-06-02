@@ -11,7 +11,7 @@ public interface AnswerService {
 
     MsgEntity<Page<AnswerEntity>> getAnswersByQuestionId(Integer questionId, int page, int pageSize, String username);
 
-    MsgEntity<AnswerEntity> updateAnswer(Integer answerId, String content, String userId);
+    MsgEntity<AnswerEntity> updateAnswer(Integer answerId, String content, String userId, boolean admin);
 
     MsgEntity<String> deleteAnswer(Integer answerId, String userId);
 
