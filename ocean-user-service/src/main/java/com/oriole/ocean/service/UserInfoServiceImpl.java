@@ -121,6 +121,7 @@ public class UserInfoServiceImpl implements UserInfoService {
             if (updatedInfo.getEmail() != null) {
                 userEntity.setEmail(updatedInfo.getEmail());
             }
+            // userService.saveOrUpdate(userEntity);
         } else {
             throw new BusinessException("-2", "无权限更新此信息");
         }
@@ -134,27 +135,39 @@ public class UserInfoServiceImpl implements UserInfoService {
         }
 
         UserExtraEntity updateInfoExtraEntity = updatedInfo.getUserExtraEntity();
+        int updateExtra = 0;
         if (updateInfoExtraEntity != null) {
             if (updateInfoExtraEntity.getCollege() != null) {
                 tempUserExtraEntity.setCollege(updateInfoExtraEntity.getCollege());
+                updateExtra = 1;
             }
             if (updateInfoExtraEntity.getMajor() != null) {
                 tempUserExtraEntity.setMajor(updateInfoExtraEntity.getMajor());
+                updateExtra = 1;
             }
             if (updateInfoExtraEntity.getBirthday() != null) {
                 tempUserExtraEntity.setBirthday(updateInfoExtraEntity.getBirthday());
+                updateExtra = 1;
             }
             if (updateInfoExtraEntity.getSex() != null) {
                 tempUserExtraEntity.setSex(updateInfoExtraEntity.getSex());
+                updateExtra = 1;
             }
             if (updateInfoExtraEntity.getPersonalSignature() != null) {
                 tempUserExtraEntity.setPersonalSignature(updateInfoExtraEntity.getPersonalSignature());
+                updateExtra = 1;
             }
         }
 
         // 同时更新用户信息和用户附加信息到数据库
         boolean userUpdateResult = userService.saveOrUpdate(userEntity);
-        boolean extraUpdateResult = userExtraService.saveOrUpdate(tempUserExtraEntity);
+        boolean extraUpdateResult;
+        if(updateExtra == 1) {
+             extraUpdateResult = userExtraService.saveOrUpdate(tempUserExtraEntity);
+        }else {
+            extraUpdateResult = false;
+        }
+
 
         if (!userUpdateResult) {
             System.out.print("User update did not affect any rows in the database.");
