@@ -2,6 +2,7 @@ package com.oriole.ocean.common.vo;
 
 import com.oriole.ocean.common.enumerate.ResultCode;
 
+
 public class MsgEntity<T> implements java.io.Serializable {
     private String state;
     private String code;
