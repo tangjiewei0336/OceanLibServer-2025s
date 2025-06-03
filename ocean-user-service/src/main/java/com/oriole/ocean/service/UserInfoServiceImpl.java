@@ -101,7 +101,10 @@ public class UserInfoServiceImpl implements UserInfoService {
 
             // 允许修改其他信息
             if (updatedInfo.getNickname() != null) {
+                System.out.println("Old User Nickname: " + userEntity.getNickname());
+                System.out.println("UpdateInfo's Nickname: " + updatedInfo.getNickname());
                 userEntity.setNickname(updatedInfo.getNickname());
+                System.out.println("Updating User Nickname: " + userEntity.getNickname());
             }
             if (updatedInfo.getPhoneNum() != null) {
                 userEntity.setPhoneNum(updatedInfo.getPhoneNum());
@@ -150,7 +153,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         }
 
         // 同时更新用户信息和用户附加信息到数据库
-        boolean userUpdateResult = userService.updateById(userEntity);
+        boolean userUpdateResult = userService.saveOrUpdate(userEntity);
         boolean extraUpdateResult = userExtraService.saveOrUpdate(tempUserExtraEntity);
 
         if (!userUpdateResult) {
