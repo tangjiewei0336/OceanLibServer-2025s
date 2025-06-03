@@ -103,6 +103,7 @@ class getnotacceptedfilelistbyfilestatementtest {
 
         // 验证 - 使用更新后的 MsgEntity 结构
         assertEquals("ERROR", result.getState());
+        System.out.println("Result: " + result);
         assertEquals("Invalid approvedOrStatus value", result.getMsg()); // 确保 msg 是 String。
 
         // 确保其他服务方法没有被调用

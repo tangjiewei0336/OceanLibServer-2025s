@@ -150,6 +150,11 @@ public class DocInfoController {
             return new MsgEntity<>("ERROR", "您没有审核文档的权限", null);
         }
 
+        // 检查 approvedOrStatus 的有效性
+        if (approvedOrStatus == null || (approvedOrStatus < 0 || approvedOrStatus > 2)) {
+            return new MsgEntity<>("ERROR", "Invalid approvedOrStatus value", null);
+        }
+
         List<FileEntity> fileEntityList;
 
         PageHelper.startPage(pageNum, pageSize, true);
@@ -158,10 +163,8 @@ public class DocInfoController {
             fileEntityList = fileService.getPendingReviewFiles();
         } else if(approvedOrStatus == 1) {  // 审核通过
             fileEntityList = fileService.getApprovedFiles();
-        } else if(approvedOrStatus == 2) {  // 审核不通过
+        } else  {  // 审核不通过 (approvedOrStatus == 2)
             fileEntityList = fileService.getRejectedFiles();
-        } else {
-            return new MsgEntity<>("ERROR", "Invalid approvedOrStatus value", null);
         }
 
         // 补充文件检查信息（如需要）
