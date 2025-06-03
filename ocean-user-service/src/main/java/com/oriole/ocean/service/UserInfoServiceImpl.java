@@ -76,7 +76,6 @@ public class UserInfoServiceImpl implements UserInfoService {
             throw new BusinessException("-1", "用户不存在");
         }
 
-
         // 超级管理员可以修改所有信息
         if (authUser.isSuperAdmin()) {
             if (updatedInfo.getRole() != null) {
@@ -100,9 +99,6 @@ public class UserInfoServiceImpl implements UserInfoService {
                 userEntity.setIsValid(updatedInfo.getIsValid());
             }
 
-            System.out.print("Current User: " + userEntity);
-            System.out.print("Updated Info: " + updatedInfo);
-
             // 允许修改其他信息
             if (updatedInfo.getNickname() != null) {
                 userEntity.setNickname(updatedInfo.getNickname());
@@ -121,15 +117,6 @@ public class UserInfoServiceImpl implements UserInfoService {
             }
             if (updatedInfo.getEmail() != null) {
                 userEntity.setEmail(updatedInfo.getEmail());
-            }
-
-            // 只有超级管理员能封禁管理员和超级管理员，普通管理员不能
-            if (updatedInfo.getIsValid() != null) {
-                if (userEntity.getRole() != null &&
-                        (userEntity.getRole().equals("admin") || userEntity.getRole().equals("superadmin"))) {
-                    throw new BusinessException("-4", "无权限封禁管理员或超级管理员");
-                }
-                userEntity.setIsValid(updatedInfo.getIsValid());
             }
         } else {
             throw new BusinessException("-2", "无权限更新此信息");
@@ -160,12 +147,9 @@ public class UserInfoServiceImpl implements UserInfoService {
             if (updateInfoExtraEntity.getPersonalSignature() != null) {
                 tempUserExtraEntity.setPersonalSignature(updateInfoExtraEntity.getPersonalSignature());
             }
-        } else {
-            throw new BusinessException("-3", "用户附加信息为空");
-        }
+        } // 这里不抛出异常，即使没有更新用户附加信息
 
         // 更新用户信息到数据库
-        // 执行更新
         boolean result = userService.updateById(userEntity);
         if (!result) {
             System.out.print("User update did not affect any rows in the database.");
@@ -174,6 +158,8 @@ public class UserInfoServiceImpl implements UserInfoService {
 
         return userEntity;
     }
+
+
 
     /**
      * 未分页搜索用户信息
