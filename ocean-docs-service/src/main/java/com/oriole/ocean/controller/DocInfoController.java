@@ -155,23 +155,37 @@ public class DocInfoController {
             return new MsgEntity<>("ERROR", "Invalid approvedOrStatus value", null);
         }
 
-        List<FileEntity> fileEntityList;
+        List<FileEntity> fileEntityList = new ArrayList<>(); // 初始化为一个空列表，以避免NullPointerException
 
         PageHelper.startPage(pageNum, pageSize, true);
 
-        if(approvedOrStatus == 0) {     // 待审核
-            fileEntityList = fileService.getPendingReviewFiles();
-        } else if(approvedOrStatus == 1) {  // 审核通过
-            fileEntityList = fileService.getApprovedFiles();
-        } else  {  // 审核不通过 (approvedOrStatus == 2)
-            fileEntityList = fileService.getRejectedFiles();
+        // 根据状态调用对应的方法
+        switch (approvedOrStatus) {
+            case 0:
+                fileEntityList = fileService.getPendingReviewFiles();
+                break;
+            case 1:
+                fileEntityList = fileService.getApprovedFiles();
+                break;
+            case 2:
+                fileEntityList = fileService.getRejectedFiles();
+                break;
+            default:
+                return new MsgEntity<>("ERROR", "Invalid approvedOrStatus value", null);
         }
 
-        // 补充文件检查信息（如需要）
+        // 确保 fileEntityList 不为 null
+        if (fileEntityList == null) {
+            fileEntityList = new ArrayList<>();
+        }
+
+        // 补充文件检查信息
         for (FileEntity fileEntity : fileEntityList) {
-            FileCheckEntity fileCheckEntity = fileCheckService.getFileCheckInfo(fileEntity.getFileID());
-            if (fileCheckEntity != null) {
-                fileEntity.setFileCheckEntity(fileCheckEntity);
+            if (fileEntity.getFileID() != null) {
+                FileCheckEntity fileCheckEntity = fileCheckService.getFileCheckInfo(fileEntity.getFileID());
+                if (fileCheckEntity != null) {
+                    fileEntity.setFileCheckEntity(fileCheckEntity);
+                }
             }
         }
 
