@@ -20,9 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.oriole.ocean.common.enumerate.ResultCode.*;
@@ -171,7 +169,7 @@ public class DocInfoController {
                 fileEntityList = fileService.getRejectedFiles();
                 break;
             default:
-                return new MsgEntity<>("ERROR", "Invalid approvedOrStatus value", null);
+                return new MsgEntity<>("ERROR", "400", new PageInfo<>()); // 返回一个空的 PageInfo
         }
 
         // 确保 fileEntityList 不为 null
@@ -189,9 +187,13 @@ public class DocInfoController {
             }
         }
 
+        // 使用 PageInfo 包装返回的文件列表
         PageInfo<FileEntity> fileEntityListPageInfo = new PageInfo<>(fileEntityList);
-        return new MsgEntity<>("SUCCESS", "1", fileEntityListPageInfo);
+
+        // 返回 MsgEntity<PageInfo<FileEntity>>
+        return new MsgEntity<>("SUCCESS", "200", fileEntityListPageInfo); // 确保返回类型一致
     }
+
 
     @RequestMapping(value = "/getRecentlyReadList", method = RequestMethod.GET)
     public MsgEntity<List<FileEntity>> getRecentlyReadList(@AuthUser AuthUserEntity authUser,
