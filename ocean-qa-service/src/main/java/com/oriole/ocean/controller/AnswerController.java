@@ -61,9 +61,17 @@ public class AnswerController {
             @AuthUser AuthUserEntity authUser,
             @NotNull @ApiParam(value = "问题的 ID", required = true) @Valid @RequestParam(value = "questionId", required = true) Integer questionId,
             @NotNull @ApiParam(value = "页码", required = true) @Valid @RequestParam(value = "page", required = true) Integer page,
-            @NotNull @ApiParam(value = "每页显示的回答数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
+            @NotNull @ApiParam(value = "每页显示的回答数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize,
+            @NotNull @ApiParam(value = "管理员可选择展示已删除的", required = false) @Valid @RequestParam(value = "includeDeleted", required = false) Boolean includeDeleted) {
 
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByQuestionId(questionId, page, pageSize, authUser.getUsername());
+        if(includeDeleted == null)
+            includeDeleted = false;
+
+        if(includeDeleted.equals(Boolean.TRUE) && !(authUser.isAdmin() || authUser.isSuperAdmin())){
+            return ResponseEntity.badRequest().body(new MsgEntity<>("ERROR", "Only admin can view deleted questions.", null));
+        };
+
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByQuestionId(questionId, page, pageSize, authUser.getUsername(), includeDeleted);
         return ResponseEntity.ok(result);
     }
 
@@ -78,7 +86,8 @@ public class AnswerController {
             @NotNull @ApiParam(value = "要修改的回答 ID", required = true) @Valid @RequestParam(value = "answerId", required = true) Integer answerId,
             @NotNull @ApiParam(value = "修改后的回答内容", required = true) @Valid @RequestParam(value = "content", required = true) String content) {
 
-        MsgEntity<AnswerEntity> result = answerService.updateAnswer(answerId, content, authUser.getUsername());
+
+        MsgEntity<AnswerEntity> result = answerService.updateAnswer(answerId, content, authUser.getUsername(), authUser.isAdmin() || authUser.isSuperAdmin());
         return ResponseEntity.ok(result);
     }
 
@@ -97,7 +106,7 @@ public class AnswerController {
     }
 
     // 我最近的回答
-    @ApiOperation(value = "获取我最近的回答", nickname = "getMyAnswers", notes = "获取我最近的回答", response = MsgEntity.class, tags = {"用户服务器/ocean-qa-service/AnswerController",})
+    @ApiOperation(value = "获取某个人最近的回答", nickname = "getMyAnswers", notes = "获取我最近的回答", response = MsgEntity.class, tags = {"用户服务器/ocean-qa-service/AnswerController",})
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "返回我最近的回答", response = MsgEntity.class),
             @ApiResponse(code = 401, message = "未授权", response = Object.class),
@@ -106,9 +115,14 @@ public class AnswerController {
     public ResponseEntity<MsgEntity<Page<AnswerEntity>>> getMyAnswers(
             @AuthUser AuthUserEntity authUser,
             @NotNull @ApiParam(value = "页码", required = true) @Valid @RequestParam(value = "page", required = true) Integer page,
-            @NotNull @ApiParam(value = "每页显示的回答数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
+            @NotNull @ApiParam(value = "每页显示的回答数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize,
+            @ApiParam(value = "用户名", required = false) @Valid @RequestParam(value = "username", required = false) String username) {
 
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByUserId(authUser.getUsername(), page, pageSize);
+        if (username == null) {
+            username = authUser.getUsername();
+        }
+
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByUserId(username, page, pageSize);
         return ResponseEntity.ok(result);
     }
 

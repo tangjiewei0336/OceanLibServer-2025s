@@ -1,0 +1,11 @@
+{
+  "analysis": {
+    "analyzer": {
+      "ik_smart": {
+        "type": "custom",
+        "tokenizer": "ik_smart",
+        "filter": ["lowercase", "asciifolding"]
+      }
+    }
+  }
+} 

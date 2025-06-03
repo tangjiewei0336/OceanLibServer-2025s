@@ -2,19 +2,29 @@ package com.oriole.ocean.service.impl;
 
 import com.oriole.ocean.common.po.mongo.QuestionEntity;
 import com.oriole.ocean.service.DataSyncService;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.client.indices.CreateIndexRequest;
+import org.elasticsearch.client.indices.GetIndexRequest;
+import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.IndexOperations;
+import org.springframework.data.elasticsearch.core.document.Document;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +42,8 @@ public class DataSyncServiceImpl implements DataSyncService {
     private MongoTemplate mongoTemplate;
     @Resource
     private ElasticsearchRestTemplate elasticsearchRestTemplate;
+    @Resource
+    private RestHighLevelClient client;
 
     private LocalDateTime lastSyncTime;
 
@@ -40,7 +52,33 @@ public class DataSyncServiceImpl implements DataSyncService {
         lastSyncTime = LocalDateTime.now();
         if (debugMode) {
             logger.info("数据同步服务以调试模式启动");
+            createIndexWithMapping();
             syncData();
+        }
+    }
+
+    private void createIndexWithMapping() {
+        try {
+            String indexName = "question_entity";
+            GetIndexRequest getIndexRequest = new GetIndexRequest(indexName);
+            boolean exists = client.indices().exists(getIndexRequest, RequestOptions.DEFAULT);
+
+            if (!exists) {
+                CreateIndexRequest request = new CreateIndexRequest(indexName);
+                
+                // 从配置文件加载索引配置
+                ClassPathResource resource = new ClassPathResource("es-index-config.json");
+                String mapping = StreamUtils.copyToString(resource.getInputStream(), StandardCharsets.UTF_8);
+                
+                request.source(mapping, XContentType.JSON);
+                client.indices().create(request, RequestOptions.DEFAULT);
+                logger.info("成功创建 ES 索引");
+            } else {
+                logger.info("ES 索引已存在");
+            }
+        } catch (Exception e) {
+            logger.error("创建索引失败", e);
+            throw new RuntimeException("创建索引失败", e);
         }
     }
 
@@ -99,6 +137,8 @@ public class DataSyncServiceImpl implements DataSyncService {
                     indexOps.delete();
                     logger.info("调试模式：已清空 Elasticsearch 索引");
                 }
+                // 创建新的索引和映射
+                createIndexWithMapping();
             }
             
             elasticsearchRestTemplate.save(exportList);
