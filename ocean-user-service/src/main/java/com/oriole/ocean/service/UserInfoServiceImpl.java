@@ -147,14 +147,18 @@ public class UserInfoServiceImpl implements UserInfoService {
             if (updateInfoExtraEntity.getPersonalSignature() != null) {
                 tempUserExtraEntity.setPersonalSignature(updateInfoExtraEntity.getPersonalSignature());
             }
-        } // 这里不抛出异常，即使没有更新用户附加信息
+        }
 
-        // 更新用户信息到数据库
-        boolean result = userService.updateById(userEntity);
-        if (!result) {
+        // 同时更新用户信息和用户附加信息到数据库
+        boolean userUpdateResult = userService.updateById(userEntity);
+        boolean extraUpdateResult = userExtraService.saveOrUpdate(tempUserExtraEntity);
+
+        if (!userUpdateResult) {
             System.out.print("User update did not affect any rows in the database.");
         }
-        userExtraService.saveOrUpdate(tempUserExtraEntity);
+        if (!extraUpdateResult) {
+            System.out.print("User extra update did not affect any rows in the database.");
+        }
 
         return userEntity;
     }
