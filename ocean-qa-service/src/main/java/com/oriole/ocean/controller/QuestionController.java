@@ -107,12 +107,15 @@ public class QuestionController {
             @AuthUser AuthUserEntity authUser,
             @NotNull @ApiParam(value = "查询用户或所有", required = false) @Valid @RequestParam(value = "username", required = false) String username,
             @NotNull @ApiParam(value = "排序方式，0:时间更新 1:热度", required = false) @Valid @RequestParam(value = "sort", required = false) Integer sort,
-            Boolean showDraft,
+            @NotNull @ApiParam(value = "管理员可选择展示已删除的", required = false) @Valid @RequestParam(value = "includeDeleted", required = false) Boolean includeDeleted,
             @NotNull @ApiParam(value = "页码", required = true) @Valid @RequestParam(value = "page", required = true) Integer page,
             @NotNull @ApiParam(value = "每页显示的问题数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
-        MsgEntity<Page<QuestionEntity>> result = null;
 
-        boolean includeDeleted = authUser.isAdmin() || authUser.isSuperAdmin();
+        MsgEntity<Page<QuestionEntity>> result;
+
+        if(includeDeleted.equals(Boolean.TRUE) && !(authUser.isAdmin() || authUser.isSuperAdmin())){
+            return ResponseEntity.badRequest().body(new MsgEntity<>("ERROR", "Only admin can view deleted questions.", null));
+        };
 
         if (username != null && !username.isEmpty()) {
             result = questionService.getQuestions(page, pageSize, username, sort, includeDeleted);
@@ -181,7 +184,7 @@ public class QuestionController {
         List<Integer> fileIDs = userBehaviorEntities.stream().map(UserBehaviorEntity::getBindID).distinct().collect(Collectors.toList());
 
         List<QuestionEntity> questions = new ArrayList<>();
-        if (fileIDs.size() > 0) {
+        if (!fileIDs.isEmpty()) {
             questions = questionService.getQuestionByIds(fileIDs);
             // 为每个问题添加详细信息
             for (QuestionEntity question : questions) {
@@ -203,7 +206,6 @@ public class QuestionController {
             @NotNull @ApiParam(value = "问题的 ID", required = true) @Valid @RequestParam(value = "questionId", required = true) Integer questionId) {
 
         QuestionEntity question = questionService.getQuestionById(questionId);
-        question.setViewCount(question.getViewCount() + 1); // 增加浏览次数
 
         if (question == null) {
             return ResponseEntity.status(404).body(new MsgEntity<>("ERROR", "Question not found", null));
@@ -212,6 +214,8 @@ public class QuestionController {
         if(!question.getIsPosted() && !question.getUserId().equals(authUser.getUsername()) && (!authUser.isAdmin() && !authUser.isSuperAdmin())){
             return ResponseEntity.status(404).body(new MsgEntity<>("ERROR", "You are not the owner of this question", null));
         }
+
+        question.setViewCount(question.getViewCount() + 1); // 增加浏览次数
 
         // 记录用户查看行为
         UserBehaviorEntity userBehavior = new UserBehaviorEntity(questionId, MainType.QUESTION, authUser.getUsername(), BehaviorType.DO_READ);

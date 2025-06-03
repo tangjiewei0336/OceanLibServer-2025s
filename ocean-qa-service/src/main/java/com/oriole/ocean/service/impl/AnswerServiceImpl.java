@@ -24,6 +24,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.validation.Valid;
 import java.util.Date;
 import java.util.List;
 
@@ -41,9 +42,9 @@ public class AnswerServiceImpl implements AnswerService {
     private UserInfoService userInfoService;
 
     @Autowired
-    public AnswerServiceImpl(AnswerRepository answerRepository, 
-                           QuestionService questionService,
-                           SequenceGeneratorService sequenceGeneratorService) {
+    public AnswerServiceImpl(AnswerRepository answerRepository,
+                             QuestionService questionService,
+                             SequenceGeneratorService sequenceGeneratorService) {
         this.answerRepository = answerRepository;
         this.questionService = questionService;
         this.sequenceGeneratorService = sequenceGeneratorService;
@@ -51,7 +52,8 @@ public class AnswerServiceImpl implements AnswerService {
 
     /**
      * 补充回答的详细信息，包括点赞状态和用户头像
-     * @param answer 回答实体
+     *
+     * @param answer      回答实体
      * @param currentUser 当前用户
      */
     private void enrichAnswerDetails(AnswerEntity answer, String currentUser) {
@@ -75,8 +77,8 @@ public class AnswerServiceImpl implements AnswerService {
     public MsgEntity<Integer> submitAnswer(Integer questionId, String content, String userId) {
         AnswerEntity answer = new AnswerEntity();
         QuestionEntity questionById = questionService.getQuestionById(questionId);
-        if(!(questionById.getIsPosted().equals(Boolean.TRUE) && questionById.getIsDeleted().equals(Boolean.FALSE)
-                                && questionById.getIsHidden().equals(Boolean.FALSE))){
+        if (!(questionById.getIsPosted().equals(Boolean.TRUE) && questionById.getIsDeleted().equals(Boolean.FALSE)
+                && questionById.getIsHidden().equals(Boolean.FALSE))) {
             return new MsgEntity<>("FAIL", "Question not visible", -1);
         }
         answer.setId(sequenceGeneratorService.getNextSequence("answer"));
@@ -94,15 +96,20 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public MsgEntity<Page<AnswerEntity>> getAnswersByQuestionId(Integer questionId, int page, int pageSize, String username) {
+    public MsgEntity<Page<AnswerEntity>> getAnswersByQuestionId(Integer questionId, int page, int pageSize, String username, @Valid Boolean includeDeleted) {
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
-        Page<AnswerEntity> answers = answerRepository.findByQuestionIdAndIsDeletedFalseAndQuestionVisibleTrue(questionId, pageable);
-        
+        Page<AnswerEntity> answers;
+        if (includeDeleted) {
+            answers = answerRepository.findByQuestionIdAndIsDeletedFalseAndQuestionVisibleTrue(questionId, pageable);
+        } else {
+            answers = answerRepository.findByQuestionIdAndQuestionVisibleTrue(questionId, pageable);
+        }
+
         // 为每个回答添加详细信息
         for (AnswerEntity answer : answers) {
             enrichAnswerDetails(answer, username); // 这里传入null是因为这个方法不需要用户信息
         }
-        
+
         return new MsgEntity<>("SUCCESS", "Answers retrieved successfully", answers);
     }
 
@@ -114,7 +121,7 @@ public class AnswerServiceImpl implements AnswerService {
         }
 
         if (!answer.getUserId().equals(userId)) {
-            if(!admin) {
+            if (!admin) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to update this answer");
             }
         }
@@ -153,7 +160,7 @@ public class AnswerServiceImpl implements AnswerService {
         if (answers == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to retrieve answers");
         }
-        
+
         for (AnswerEntity answer : answers) {
             answer.setQuestion(questionService.getQuestionById(answer.getQuestionId()));
             enrichAnswerDetails(answer, username);
@@ -169,10 +176,10 @@ public class AnswerServiceImpl implements AnswerService {
         if (answers == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No answers found");
         }
-        
+
         for (AnswerEntity answer : answers) {
             answer.setQuestion(questionService.getQuestionById(answer.getQuestionId()));
-            enrichAnswerDetails(answer, username); 
+            enrichAnswerDetails(answer, username);
         }
 
         return new MsgEntity<>("SUCCESS", "All answers retrieved successfully", answers);
@@ -190,7 +197,8 @@ public class AnswerServiceImpl implements AnswerService {
 
     @Override
     public int makeAnswerVisible(Integer questionId, boolean visibility) {
-        List<AnswerEntity> answers = answerRepository.findByQuestionIdAndQuestionVisibleTrue(questionId);
+        Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE); // Fetch all answers
+        List<AnswerEntity> answers = answerRepository.findByQuestionIdAndQuestionVisibleTrue(questionId, pageable).getContent();
         for (AnswerEntity answer : answers) {
             answer.setQuestionVisible(visibility);
         }

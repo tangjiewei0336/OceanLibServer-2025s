@@ -9,7 +9,7 @@ import javax.validation.Valid;
 public interface AnswerService {
     MsgEntity<Integer> submitAnswer(Integer questionId, String content, String userId);
 
-    MsgEntity<Page<AnswerEntity>> getAnswersByQuestionId(Integer questionId, int page, int pageSize, String username);
+    MsgEntity<Page<AnswerEntity>> getAnswersByQuestionId(Integer questionId, int page, int pageSize, String username, @Valid Boolean includeDeleted);
 
     MsgEntity<AnswerEntity> updateAnswer(Integer answerId, String content, String userId, boolean admin);
 
