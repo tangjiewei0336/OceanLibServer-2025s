@@ -198,37 +198,50 @@ public class DocFunctionController {
             return new MsgEntity<>("ERROR", "您没有审核文档的权限", null);
         }
 
-        // 2. 直接获取指定文件
+        // 2. 验证拒绝原因（提前验证）
+        if (isApproved == 0 && (rejectReason == null || rejectReason.trim().isEmpty())) {
+            return new MsgEntity<>("ERROR", "拒绝文档必须提供拒绝原因", null);
+        }
+
+        // 3. 直接获取指定文件
         FileEntity targetFile = fileService.getFileDetailsInfoByFileID(fileID);
         if (targetFile == null) {
             return new MsgEntity<>("ERROR", "文件不存在", null);
         }
 
-        // 无需检查文件状态，因为前端有复审设计
-
-        // 3. 处理审核记录 - 使用更健壮的方式检查和更新审核记录
-        // 一定是否已存在审核记录
+        // 4. 处理审核记录 - 添加空值检查
         FileCheckEntity existingCheck = fileCheckService.getFileCheckInfo(fileID);
 
-        // 一定存在记录，更新现有记录
-        existingCheck.setStatus(isApproved == 1 ? (byte)0 : (byte)1);
-        existingCheck.setRejectReason(isApproved == 1 ? null : rejectReason);
-        existingCheck.setAgreeReason(isApproved == 1 ? agreeReason : null);
-        existingCheck.setProcessingTime(new Date());
-        fileCheckService.updateById(existingCheck);  // 直接调用updateById
+        if (existingCheck == null) {
+            // 如果不存在审核记录，创建新记录
+            existingCheck = new FileCheckEntity();
+            existingCheck.setFileID(fileID);
+            existingCheck.setStatus(isApproved == 1 ? (byte)0 : (byte)1);
+            existingCheck.setRejectReason(isApproved == 1 ? null : rejectReason);
+            existingCheck.setAgreeReason(isApproved == 1 ? agreeReason : null);
+            existingCheck.setProcessingTime(new Date());
 
-        // 4. 更新文件审核状态
+            // 插入新记录
+            fileCheckService.save(existingCheck);
+        } else {
+            // 更新现有记录
+            existingCheck.setStatus(isApproved == 1 ? (byte)0 : (byte)1);
+            existingCheck.setRejectReason(isApproved == 1 ? null : rejectReason);
+            existingCheck.setAgreeReason(isApproved == 1 ? agreeReason : null);
+            existingCheck.setProcessingTime(new Date());
+
+            // 更新记录
+            fileCheckService.updateById(existingCheck);
+        }
+
+        // 5. 更新文件审核状态
         targetFile.setIsApproved(isApproved);
         fileService.updateById(targetFile);
 
-        // 5. 返回结果
+        // 6. 返回结果
         if (isApproved == 1) {
             return new MsgEntity<>("SUCCESS", "文档审核通过", null);
         } else {
-            // 拒绝文档时验证拒绝原因
-            if (rejectReason == null || rejectReason.trim().isEmpty()) {
-                return new MsgEntity<>("ERROR", "拒绝文档必须提供拒绝原因", null);
-            }
             return new MsgEntity<>("SUCCESS", "文档已拒绝", null);
         }
     }

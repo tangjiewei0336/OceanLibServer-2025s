@@ -78,19 +78,26 @@ public class UserInfoServiceImpl implements UserInfoService {
 
         // 超级管理员可以修改所有信息
         if (authUser.isSuperAdmin()) {
+            // 超级管理员独有权限：修改角色
             if (updatedInfo.getRole() != null) {
                 userEntity.setRole(updatedInfo.getRole());
             }
+
+            // 修改用户有效性（超级管理员无限制）
             if (updatedInfo.getIsValid() != null) {
                 userEntity.setIsValid(updatedInfo.getIsValid());
             }
+
+            // 超级管理员也能修改所有其他信息
+            updateBasicUserInfo(userEntity, updatedInfo);
+
         } else if (authUser.isAdmin()) {
-            // 管理员只能修改非角色信息
+            // 管理员不能修改角色
             if (updatedInfo.getRole() != null) {
                 throw new BusinessException("-6", "无权限修改用户角色");
             }
 
-            // 允许管理员修改 isValid 但需检查角色
+            // 管理员修改 isValid 需要检查目标用户角色
             if (updatedInfo.getIsValid() != null) {
                 if (userEntity.getRole() != null &&
                         (userEntity.getRole().equals("admin") || userEntity.getRole().equals("superadmin"))) {
@@ -99,75 +106,24 @@ public class UserInfoServiceImpl implements UserInfoService {
                 userEntity.setIsValid(updatedInfo.getIsValid());
             }
 
-            // 允许修改其他信息
-            if (updatedInfo.getNickname() != null) {
-                System.out.println("Old User Nickname: " + userEntity.getNickname());
-                System.out.println("UpdateInfo's Nickname: " + updatedInfo.getNickname());
-                userEntity.setNickname(updatedInfo.getNickname());
-                System.out.println("Updating User Nickname: " + userEntity.getNickname());
-            }
-            if (updatedInfo.getPhoneNum() != null) {
-                userEntity.setPhoneNum(updatedInfo.getPhoneNum());
-            }
-            if (updatedInfo.getStudentID() != null) {
-                userEntity.setStudentID(updatedInfo.getStudentID());
-            }
-            if (updatedInfo.getRealname() != null) {
-                userEntity.setRealname(updatedInfo.getRealname());
-            }
-            if (updatedInfo.getAvatar() != null) {
-                userEntity.setAvatar(updatedInfo.getAvatar());
-            }
-            if (updatedInfo.getEmail() != null) {
-                userEntity.setEmail(updatedInfo.getEmail());
-            }
-            // userService.saveOrUpdate(userEntity);
+            // 管理员可以修改其他基本信息
+            updateBasicUserInfo(userEntity, updatedInfo);
+
         } else {
             throw new BusinessException("-2", "无权限更新此信息");
         }
 
         // 更新用户附加信息
-        UserExtraEntity tempUserExtraEntity = userEntity.getUserExtraEntity();
-        if (tempUserExtraEntity == null) {
-            tempUserExtraEntity = new UserExtraEntity();
-            tempUserExtraEntity.setUsername(userEntity.getUsername());
-            userEntity.setUserExtraEntity(tempUserExtraEntity);
-        }
+        updateUserExtraInfo(userEntity, updatedInfo);
 
-        UserExtraEntity updateInfoExtraEntity = updatedInfo.getUserExtraEntity();
-        int updateExtra = 0;
-        if (updateInfoExtraEntity != null) {
-            if (updateInfoExtraEntity.getCollege() != null) {
-                tempUserExtraEntity.setCollege(updateInfoExtraEntity.getCollege());
-                updateExtra = 1;
-            }
-            if (updateInfoExtraEntity.getMajor() != null) {
-                tempUserExtraEntity.setMajor(updateInfoExtraEntity.getMajor());
-                updateExtra = 1;
-            }
-            if (updateInfoExtraEntity.getBirthday() != null) {
-                tempUserExtraEntity.setBirthday(updateInfoExtraEntity.getBirthday());
-                updateExtra = 1;
-            }
-            if (updateInfoExtraEntity.getSex() != null) {
-                tempUserExtraEntity.setSex(updateInfoExtraEntity.getSex());
-                updateExtra = 1;
-            }
-            if (updateInfoExtraEntity.getPersonalSignature() != null) {
-                tempUserExtraEntity.setPersonalSignature(updateInfoExtraEntity.getPersonalSignature());
-                updateExtra = 1;
-            }
-        }
-
+        boolean userUpdateResult = false;
         // 同时更新用户信息和用户附加信息到数据库
-        boolean userUpdateResult = userService.saveOrUpdate(userEntity);
-        boolean extraUpdateResult;
-        if(updateExtra == 1) {
-             extraUpdateResult = userExtraService.saveOrUpdate(tempUserExtraEntity);
-        }else {
-            extraUpdateResult = false;
+        if(userService != null) {
+            userUpdateResult = userService.saveOrUpdate(userEntity);
+        } else {
+            System.out.print("userUpdateResult is null");
         }
-
+        boolean extraUpdateResult = updateUserExtraInfoToDb(userEntity);
 
         if (!userUpdateResult) {
             System.out.print("User update did not affect any rows in the database.");
@@ -179,6 +135,74 @@ public class UserInfoServiceImpl implements UserInfoService {
         return userEntity;
     }
 
+    /**
+     * 更新用户基本信息（昵称、手机号等）
+     */
+    private void updateBasicUserInfo(UserEntity userEntity, UserEntity updatedInfo) {
+        if (updatedInfo.getNickname() != null) {
+            System.out.println("Old User Nickname: " + userEntity.getNickname());
+            System.out.println("UpdateInfo's Nickname: " + updatedInfo.getNickname());
+            userEntity.setNickname(updatedInfo.getNickname());
+            System.out.println("Updating User Nickname: " + userEntity.getNickname());
+        }
+        if (updatedInfo.getPhoneNum() != null) {
+            userEntity.setPhoneNum(updatedInfo.getPhoneNum());
+        }
+        if (updatedInfo.getStudentID() != null) {
+            userEntity.setStudentID(updatedInfo.getStudentID());
+        }
+        if (updatedInfo.getRealname() != null) {
+            userEntity.setRealname(updatedInfo.getRealname());
+        }
+        if (updatedInfo.getAvatar() != null) {
+            userEntity.setAvatar(updatedInfo.getAvatar());
+        }
+        if (updatedInfo.getEmail() != null) {
+            userEntity.setEmail(updatedInfo.getEmail());
+        }
+    }
+
+    /**
+     * 更新用户附加信息
+     */
+    private void updateUserExtraInfo(UserEntity userEntity, UserEntity updatedInfo) {
+        UserExtraEntity tempUserExtraEntity = userEntity.getUserExtraEntity();
+        if (tempUserExtraEntity == null) {
+            tempUserExtraEntity = new UserExtraEntity();
+            tempUserExtraEntity.setUsername(userEntity.getUsername());
+            userEntity.setUserExtraEntity(tempUserExtraEntity);
+        }
+
+        UserExtraEntity updateInfoExtraEntity = updatedInfo.getUserExtraEntity();
+        if (updateInfoExtraEntity != null) {
+            if (updateInfoExtraEntity.getCollege() != null) {
+                tempUserExtraEntity.setCollege(updateInfoExtraEntity.getCollege());
+            }
+            if (updateInfoExtraEntity.getMajor() != null) {
+                tempUserExtraEntity.setMajor(updateInfoExtraEntity.getMajor());
+            }
+            if (updateInfoExtraEntity.getBirthday() != null) {
+                tempUserExtraEntity.setBirthday(updateInfoExtraEntity.getBirthday());
+            }
+            if (updateInfoExtraEntity.getSex() != null) {
+                tempUserExtraEntity.setSex(updateInfoExtraEntity.getSex());
+            }
+            if (updateInfoExtraEntity.getPersonalSignature() != null) {
+                tempUserExtraEntity.setPersonalSignature(updateInfoExtraEntity.getPersonalSignature());
+            }
+        }
+    }
+
+    /**
+     * 将用户附加信息保存到数据库
+     */
+    private boolean updateUserExtraInfoToDb(UserEntity userEntity) {
+        UserExtraEntity userExtraEntity = userEntity.getUserExtraEntity();
+        if (userExtraEntity != null) {
+            return userExtraService.saveOrUpdate(userExtraEntity);
+        }
+        return true; // 如果没有附加信息需要更新，认为成功
+    }
 
 
     /**
