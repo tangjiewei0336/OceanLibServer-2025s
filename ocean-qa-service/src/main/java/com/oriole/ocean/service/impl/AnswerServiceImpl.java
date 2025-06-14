@@ -154,9 +154,15 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public MsgEntity<Page<AnswerEntity>> getAnswersByUserId(String username, Integer page, Integer pageSize) {
+    public MsgEntity<Page<AnswerEntity>> getAnswersByUserId(String username, Integer page, Integer pageSize, boolean includeDeleted) {
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
-        Page<AnswerEntity> answers = answerRepository.findByUserIdAndIsDeletedFalseAndQuestionVisibleTrue(username, pageable);
+        Page<AnswerEntity> answers;
+        if (!includeDeleted) {
+            answers = answerRepository.findByUserIdAndIsDeletedFalseAndQuestionVisibleTrue(username, pageable);
+        } else {
+            answers = answerRepository.findByUserId(username, pageable);
+        }
+
         if (answers == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to retrieve answers");
         }
