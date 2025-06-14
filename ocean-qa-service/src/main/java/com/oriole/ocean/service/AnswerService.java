@@ -15,7 +15,7 @@ public interface AnswerService {
 
     MsgEntity<String> deleteAnswer(Integer answerId, String userId);
 
-    MsgEntity<Page<AnswerEntity>> getAnswersByUserId(String username, Integer page, Integer pageSize);
+    MsgEntity<Page<AnswerEntity>> getAnswersByUserId(String username, Integer page, Integer pageSize, boolean includeDeleted);
 
     MsgEntity<Page<AnswerEntity>> getAllAnswers(Integer page, Integer pageSize, String username, @Valid boolean includeDeleted);
 

@@ -116,13 +116,18 @@ public class AnswerController {
             @AuthUser AuthUserEntity authUser,
             @NotNull @ApiParam(value = "页码", required = true) @Valid @RequestParam(value = "page", required = true) Integer page,
             @NotNull @ApiParam(value = "每页显示的回答数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize,
-            @ApiParam(value = "用户名", required = false) @Valid @RequestParam(value = "username", required = false) String username) {
+            @ApiParam(value = "用户名", required = false) @Valid @RequestParam(value = "username", required = false) String username,
+            @NotNull @ApiParam(value = "管理员可选择展示已删除的", required = false) @Valid @RequestParam(value = "includeDeleted", required = false) Boolean includeDeleted) {
 
         if (username == null) {
             username = authUser.getUsername();
         }
 
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByUserId(username, page, pageSize);
+        if (includeDeleted == null){
+            includeDeleted = false;
+        }
+
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByUserId(username, page, pageSize, (boolean)includeDeleted);
         return ResponseEntity.ok(result);
     }
 

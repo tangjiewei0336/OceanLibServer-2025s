@@ -19,4 +19,6 @@ public interface AnswerRepository extends MongoRepository<AnswerEntity, String> 
     Page<AnswerEntity> findByIsDeletedFalseAndQuestionVisibleTrue(Pageable pageable);
 
     Page<AnswerEntity> findByQuestionIdAndQuestionVisibleTrue(Integer questionId, Pageable pageable);
+
+    Page<AnswerEntity> findByUserId(String username, Pageable pageable);
 }
