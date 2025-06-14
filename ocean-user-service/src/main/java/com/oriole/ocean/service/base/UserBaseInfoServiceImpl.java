@@ -34,6 +34,10 @@ public class UserBaseInfoServiceImpl extends ServiceImpl<UserDao, UserEntity> {
 
     // 未使用
     public UserEntity banUser(AuthUserEntity authUser, String username) {
+        // 添加 null 检查
+        if (authUser == null) {
+            throw new BusinessException("-1", "Auth user cannot be null");
+        }
         // 1. 获取执行操作的用户角色
         String operatorRole = authUser.getRole();
 
