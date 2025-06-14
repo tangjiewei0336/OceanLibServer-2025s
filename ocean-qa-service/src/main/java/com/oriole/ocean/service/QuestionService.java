@@ -16,7 +16,7 @@ public interface QuestionService {
     List<QuestionEntity> getQuestionByIds(List<Integer> questionIds);
 
     MsgEntity<QuestionEntity> updateQuestion(Integer questionId, String title, String content,
-                                             Boolean isPost, Boolean isHide, Integer setReward, String userId);
+                                             Boolean isPost, Boolean isHide, Integer setReward);
 
     MsgEntity<String> deleteQuestion(Integer questionId, String userId);
 
