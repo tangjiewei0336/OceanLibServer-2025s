@@ -67,7 +67,7 @@ public class LikeController {
         if (isLike && !isCancel) {
             UserBehaviorEntity existingLike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(questionId, MainType.QUESTION, authUser.getUsername(), BehaviorType.DO_LIKE));
             if (existingLike != null && !existingLike.getIsCancel()) {
-                return new MsgEntity<>("-1","ERRDUP", "你已经赞过了。");
+                return new MsgEntity<>("-1", "ERRDUP", "你已经赞过了。");
             }
         }
 
@@ -75,7 +75,7 @@ public class LikeController {
         if (!isLike && !isCancel) {
             UserBehaviorEntity existingDislike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(questionId, MainType.QUESTION, authUser.getUsername(), BehaviorType.DO_DISLIKE));
             if (existingDislike != null && !existingDislike.getIsCancel()) {
-                return new MsgEntity<>("-1","ERRDUP", "你已踩过了。");
+                return new MsgEntity<>("-1", "ERRDUP", "你已踩过了。");
             }
         }
 
@@ -83,7 +83,7 @@ public class LikeController {
         if (isLike && isCancel) {
             UserBehaviorEntity existingLike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(questionId, MainType.QUESTION, authUser.getUsername(), BehaviorType.DO_LIKE));
             if (existingLike == null || existingLike.getIsCancel()) {
-                return new MsgEntity<>("-1","ERRNOBE", "你还没赞呢。");
+                return new MsgEntity<>("-1", "ERRNOBE", "你还没赞呢。");
             }
         }
 
@@ -91,7 +91,7 @@ public class LikeController {
         if (!isLike && isCancel) {
             UserBehaviorEntity existingDislike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(questionId, MainType.QUESTION, authUser.getUsername(), BehaviorType.DO_DISLIKE));
             if (existingDislike == null || existingDislike.getIsCancel()) {
-                return new MsgEntity<>("-1","ERRNOBE", "你还没踩呢。");
+                return new MsgEntity<>("-1", "ERRNOBE", "你还没踩呢。");
             }
         }
 
@@ -161,7 +161,7 @@ public class LikeController {
         if (isLike && !isCancel) {
             UserBehaviorEntity existingLike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(answerId, MainType.ANSWER, authUser.getUsername(), BehaviorType.DO_LIKE));
             if (existingLike != null && !existingLike.getIsCancel()) {
-                return new MsgEntity<>("-1","ERRDUP", "你已经赞过了。");
+                return new MsgEntity<>("-1", "ERRDUP", "你已经赞过了。");
             }
         }
 
@@ -169,7 +169,7 @@ public class LikeController {
         if (!isLike && !isCancel) {
             UserBehaviorEntity existingDislike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(answerId, MainType.ANSWER, authUser.getUsername(), BehaviorType.DO_DISLIKE));
             if (existingDislike != null && !existingDislike.getIsCancel()) {
-                return new MsgEntity<>("-1","ERRDUP", "你已经踩过了。");
+                return new MsgEntity<>("-1", "ERRDUP", "你已经踩过了。");
             }
         }
 
@@ -186,21 +186,14 @@ public class LikeController {
             switch (evaluate) {
                 case CANCEL_LIKE:
 
-                    UserBehaviorEntity existingLike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(answerId, MainType.ANSWER, authUser.getUsername(), BehaviorType.DO_LIKE));
-                    if (!(existingLike == null)) {
-                        userBehaviorService.deleteBehaviorRecord(existingLike);
-                        update.inc("like_count", -1);
-                    }
+                    update.inc("like_count", -1);
                     break;
                 case LIKE:
                     update.inc("like_count", 1);
                     break;
                 case CANCEL_DISLIKE:
-                    UserBehaviorEntity existingDislike = userBehaviorService.findBehaviorRecord(new UserBehaviorEntity(answerId, MainType.ANSWER, authUser.getUsername(), BehaviorType.DO_DISLIKE));
-                    if (!(existingDislike == null)) {
-                        update.inc("dislike_count", -1);
-                        userBehaviorService.deleteBehaviorRecord(existingDislike);
-                    }
+
+                    update.inc("dislike_count", -1);
                     break;
                 case DISLIKE:
                     update.inc("dislike_count", 1);
