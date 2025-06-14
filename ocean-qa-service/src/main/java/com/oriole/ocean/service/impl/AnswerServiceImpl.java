@@ -1,5 +1,6 @@
 package com.oriole.ocean.service.impl;
 
+import com.alibaba.nacos.shaded.javax.annotation.Nullable;
 import com.oriole.ocean.common.enumerate.BehaviorType;
 import com.oriole.ocean.common.enumerate.MainType;
 import com.oriole.ocean.common.enumerate.UserInfoLevel;
@@ -134,14 +135,10 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public MsgEntity<String> deleteAnswer(Integer answerId, String userId) {
+    public MsgEntity<String> deleteAnswer(Integer answerId) {
         AnswerEntity answer = answerRepository.findByIdAndIsDeletedFalseAndQuestionVisibleTrue(answerId);
         if (answer == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Answer not found");
-        }
-
-        if (!answer.getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to delete this answer");
         }
 
         answer.setIsDeleted(true);
@@ -199,12 +196,13 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public AnswerEntity getAnswerById(Integer answerId, String username) {
+    public AnswerEntity getAnswerById(Integer answerId, @Nullable String username) {
         AnswerEntity answer = answerRepository.findByIdAndIsDeletedFalseAndQuestionVisibleTrue(answerId);
         if (answer == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Answer not found");
         }
-        enrichAnswerDetails(answer, username);
+        if (username != null)
+            enrichAnswerDetails(answer, username);
         return answer;
     }
 

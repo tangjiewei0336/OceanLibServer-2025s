@@ -18,7 +18,7 @@ public interface QuestionService {
     MsgEntity<QuestionEntity> updateQuestion(Integer questionId, String title, String content,
                                              Boolean isPost, Boolean isHide, Integer setReward);
 
-    MsgEntity<String> deleteQuestion(Integer questionId, String userId);
+    MsgEntity<String> deleteQuestion(Integer questionId);
 
     MsgEntity<Page<QuestionEntity>> getMyDrafts(String userId, int page, int pageSize);
 

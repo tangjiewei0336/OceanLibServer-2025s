@@ -13,7 +13,7 @@ public interface AnswerService {
 
     MsgEntity<AnswerEntity> updateAnswer(Integer answerId, String content, String userId, boolean admin);
 
-    MsgEntity<String> deleteAnswer(Integer answerId, String userId);
+    MsgEntity<String> deleteAnswer(Integer answerId);
 
     MsgEntity<Page<AnswerEntity>> getAnswersByUserId(String username, Integer page, Integer pageSize, boolean includeDeleted);
 
