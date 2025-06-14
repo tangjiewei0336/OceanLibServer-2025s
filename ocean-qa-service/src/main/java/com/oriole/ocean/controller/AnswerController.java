@@ -135,9 +135,17 @@ public class AnswerController {
     public ResponseEntity<MsgEntity<Page<AnswerEntity>>> getAllAnswers(
             @AuthUser AuthUserEntity authUser,
             @NotNull @ApiParam(value = "页码", required = true) @Valid @RequestParam(value = "page", required = true) Integer page,
-            @NotNull @ApiParam(value = "每页显示的回答数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize) {
+            @NotNull @ApiParam(value = "每页显示的回答数量", required = true) @Valid @RequestParam(value = "pageSize", required = true) Integer pageSize,
+            @NotNull @ApiParam(value = "管理员可选择展示已删除的", required = false) @Valid @RequestParam(value = "includeDeleted", required = false) Boolean includeDeleted) {
 
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAllAnswers(page, pageSize, authUser.getUsername());
+
+        if(includeDeleted == null)
+            includeDeleted = false;
+        if(includeDeleted.equals(Boolean.TRUE) && !(authUser.isAdmin() || authUser.isSuperAdmin())){
+            return ResponseEntity.badRequest().body(new MsgEntity<>("ERROR", "Only admin can view deleted answers.", null));
+        };
+
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAllAnswers(page, pageSize, authUser.getUsername(), includeDeleted);
         return ResponseEntity.ok(result);
     }
 }
