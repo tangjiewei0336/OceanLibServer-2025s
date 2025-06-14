@@ -241,4 +241,31 @@ public class QuestionServiceImpl implements QuestionService {
             mongoQuestionRepository.save(question);
         }
     }
+
+    @Override
+    public MsgEntity<Page<QuestionEntity>> getAllQuestionsForAdmin(int page, int pageSize, Integer sortMethod) {
+        Pageable pageable;
+        Page<QuestionEntity> questions;
+
+        if (sortMethod != null) {
+            switch (sortMethod) {
+                case 0: // 按更新时间排序
+                    pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "updateTime"));
+                    break;
+                case 1: // 按热度排序
+                    pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "viewCount"));
+                    break;
+                default:
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid sort method");
+            }
+        } else {
+            // 默认按更新时间排序
+            pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "updateTime"));
+        }
+
+        // 获取所有问题，不限制可见性
+        questions = mongoQuestionRepository.findAll(pageable);
+
+        return new MsgEntity<>("SUCCESS", "All questions retrieved successfully", questions);
+    }
 }
