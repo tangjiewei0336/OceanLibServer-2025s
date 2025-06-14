@@ -25,8 +25,10 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
@@ -151,8 +153,23 @@ public class QuestionController {
             @ApiParam(value = "") @RequestPart(value = "title", required = false) String title,
             @ApiParam(value = "") @RequestPart(value = "content", required = false) String content) {
 
+        // 检查是否有权限修改问题
+        QuestionEntity question = questionService.getQuestionById(questionId);
+        if (question == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Question not found");
+        }
+        if (!question.getUserId().equals(authUser.getUsername()) && !(authUser.isAdmin() || authUser.isSuperAdmin())) {
+            // 如果不是管理员或超级管理员，并且不是问题的创建者，则禁止修改
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to update this question");
+        }
+
+        if ((question.getIsDeleted() || question.getIsHidden()) && !(authUser.isAdmin() || authUser.isSuperAdmin())) {
+            // 如果不是管理员或超级管理员，并且不是问题的创建者，则禁止修改
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admin can update deleted or hidden questions");
+        }
+
         MsgEntity<QuestionEntity> result = questionService.updateQuestion(
-                questionId, title, content, isPost, isHide, setReward, authUser.getUsername());
+                questionId, title, content, isPost, isHide, setReward);
         return ResponseEntity.ok(result);
     }
 

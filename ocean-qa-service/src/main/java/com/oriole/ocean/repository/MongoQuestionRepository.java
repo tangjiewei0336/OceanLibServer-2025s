@@ -29,4 +29,5 @@ public interface MongoQuestionRepository extends MongoRepository<QuestionEntity,
 
     Page<QuestionEntity> findByUserIdAndIsPostedFalseAndIsHiddenFalseAndIsDeletedFalse(String userId, Pageable pageable);
 
+    QuestionEntity findByBindId(Integer questionId);
 }

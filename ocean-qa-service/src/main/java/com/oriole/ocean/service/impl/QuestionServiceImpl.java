@@ -138,16 +138,13 @@ public class QuestionServiceImpl implements QuestionService {
 
     @Override
     public MsgEntity<QuestionEntity> updateQuestion(Integer questionId, String title, String content,
-                                                    Boolean isPost, Boolean isHide, Integer setReward, String userId) {
+                                                    Boolean isPost, Boolean isHide, Integer setReward) {
         // TODO: 没有处理setReward
 
-        QuestionEntity question = mongoQuestionRepository.findByBindIdAndIsDeletedFalse(questionId);
+        QuestionEntity question = mongoQuestionRepository.findByBindId(questionId);
+
         if (question == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Question not found");
-        }
-
-        if (!question.getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to update this question");
         }
 
         // Validate post/hide states
