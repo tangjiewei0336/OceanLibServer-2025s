@@ -17,7 +17,7 @@ public interface AnswerService {
 
     MsgEntity<Page<AnswerEntity>> getAnswersByUserId(String username, Integer page, Integer pageSize);
 
-    MsgEntity<Page<AnswerEntity>> getAllAnswers(Integer page, Integer pageSize, String username);
+    MsgEntity<Page<AnswerEntity>> getAllAnswers(Integer page, Integer pageSize, String username, @Valid boolean includeDeleted);
 
     /**
      * 根据回答ID获取回答信息

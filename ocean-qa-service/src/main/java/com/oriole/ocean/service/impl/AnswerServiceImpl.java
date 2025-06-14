@@ -170,9 +170,16 @@ public class AnswerServiceImpl implements AnswerService {
     }
 
     @Override
-    public MsgEntity<Page<AnswerEntity>> getAllAnswers(Integer page, Integer pageSize, String username) {
+    public MsgEntity<Page<AnswerEntity>> getAllAnswers(Integer page, Integer pageSize, String username, @Valid boolean includeDeleted) {
         Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "createTime"));
-        Page<AnswerEntity> answers = answerRepository.findByIsDeletedFalseAndQuestionVisibleTrue(pageable);
+        Page<AnswerEntity> answers;
+
+        if (!includeDeleted) {
+            answers = answerRepository.findByIsDeletedFalseAndQuestionVisibleTrue(pageable);
+        } else {
+            answers = answerRepository.findAll(pageable);
+        }
+
         if (answers == null) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No answers found");
         }

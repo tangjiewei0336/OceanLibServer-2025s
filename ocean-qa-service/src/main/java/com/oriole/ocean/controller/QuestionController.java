@@ -231,6 +231,39 @@ public class QuestionController {
         return ResponseEntity.ok(result);
     }
 
+    @ApiOperation(value = "管理员获取所有问题", nickname = "getAllQuestionsForAdmin", notes = "管理员获取所有问题，无视isDeleted、isHidden、isPosted的限制。", response = MsgEntity.class)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "返回所有问题列表", response = MsgEntity.class),
+            @ApiResponse(code = 401, message = "未授权", response = Object.class),
+            @ApiResponse(code = 403, message = "权限不足", response = Object.class),
+            @ApiResponse(code = 500, message = "服务器内部错误", response = Object.class)})
+    @GetMapping(value = "/admin/all", produces = {"application/json"})
+    public ResponseEntity<MsgEntity<Page<QuestionEntity>>> getAllQuestionsForAdmin(
+            @AuthUser AuthUserEntity authUser,
+            @ApiParam(value = "页码", required = true) @RequestParam(value = "page", required = true) int page,
+            @ApiParam(value = "每页大小", required = true) @RequestParam(value = "pageSize", required = true) int pageSize,
+            @ApiParam(value = "排序方式：0-按更新时间，1-按热度") @RequestParam(value = "sortMethod", required = false) Integer sortMethod) {
+
+        // 检查管理员权限
+        if (!authUser.isAdmin() && !authUser.isSuperAdmin()) {
+            return ResponseEntity.status(403).body(new MsgEntity<>("ERROR", "Permission denied", null));
+        }
+
+        MsgEntity<Page<QuestionEntity>> result = questionService.getAllQuestionsForAdmin(page, pageSize, sortMethod);
+
+        if (result == null) {
+            return ResponseEntity.badRequest().body(new MsgEntity<>("ERROR", "Failed to retrieve questions", null));
+        }
+
+        // 为每个问题添加详细信息
+        String currentUser = authUser.getUsername();
+        for (QuestionEntity question : result.getMsg().getContent()) {
+            enrichQuestionDetails(question, currentUser);
+        }
+
+        return ResponseEntity.ok(result);
+    }
+
     @ApiOperation(value = "搜索问题", nickname = "searchQuestions", notes = "根据关键词搜索问题。", response = MsgEntity.class)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "返回搜索结果", response = MsgEntity.class),

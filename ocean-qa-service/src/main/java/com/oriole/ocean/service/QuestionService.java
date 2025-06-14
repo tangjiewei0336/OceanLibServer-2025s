@@ -36,4 +36,14 @@ public interface QuestionService {
      * @param questionId 问题ID
      */
     void incrementViewCount(Integer questionId);
+
+    /**
+     * 管理员获取所有问题，无视isDeleted、isHidden、isPosted的限制
+     *
+     * @param page 页码
+     * @param pageSize 每页大小
+     * @param sortMethod 排序方式：0-按更新时间，1-按热度
+     * @return 问题列表
+     */
+    MsgEntity<Page<QuestionEntity>> getAllQuestionsForAdmin(int page, int pageSize, Integer sortMethod);
 }
