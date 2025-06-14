@@ -20,9 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.oriole.ocean.common.enumerate.ResultCode.*;
@@ -150,31 +148,52 @@ public class DocInfoController {
             return new MsgEntity<>("ERROR", "您没有审核文档的权限", null);
         }
 
-        List<FileEntity> fileEntityList;
-
-        PageHelper.startPage(pageNum, pageSize, true);
-
-        if(approvedOrStatus == 0) {     // 待审核
-            fileEntityList = fileService.getPendingReviewFiles();
-        } else if(approvedOrStatus == 1) {  // 审核通过
-            fileEntityList = fileService.getApprovedFiles();
-        } else if(approvedOrStatus == 2) {  // 审核不通过
-            fileEntityList = fileService.getRejectedFiles();
-        } else {
+        // 检查 approvedOrStatus 的有效性
+        if (approvedOrStatus == null || (approvedOrStatus < 0 || approvedOrStatus > 2)) {
             return new MsgEntity<>("ERROR", "Invalid approvedOrStatus value", null);
         }
 
-        // 补充文件检查信息（如需要）
+        List<FileEntity> fileEntityList = new ArrayList<>(); // 初始化为一个空列表，以避免NullPointerException
+
+        PageHelper.startPage(pageNum, pageSize, true);
+
+        // 根据状态调用对应的方法
+        switch (approvedOrStatus) {
+            case 0:
+                fileEntityList = fileService.getPendingReviewFiles();
+                break;
+            case 1:
+                fileEntityList = fileService.getApprovedFiles();
+                break;
+            case 2:
+                fileEntityList = fileService.getRejectedFiles();
+                break;
+            default:
+                return new MsgEntity<>("ERROR", "400", new PageInfo<>()); // 返回一个空的 PageInfo
+        }
+
+        // 确保 fileEntityList 不为 null
+        if (fileEntityList == null) {
+            fileEntityList = new ArrayList<>();
+        }
+
+        // 补充文件检查信息
         for (FileEntity fileEntity : fileEntityList) {
-            FileCheckEntity fileCheckEntity = fileCheckService.getFileCheckInfo(fileEntity.getFileID());
-            if (fileCheckEntity != null) {
-                fileEntity.setFileCheckEntity(fileCheckEntity);
+            if (fileEntity.getFileID() != null) {
+                FileCheckEntity fileCheckEntity = fileCheckService.getFileCheckInfo(fileEntity.getFileID());
+                if (fileCheckEntity != null) {
+                    fileEntity.setFileCheckEntity(fileCheckEntity);
+                }
             }
         }
 
+        // 使用 PageInfo 包装返回的文件列表
         PageInfo<FileEntity> fileEntityListPageInfo = new PageInfo<>(fileEntityList);
-        return new MsgEntity<>("SUCCESS", "1", fileEntityListPageInfo);
+
+        // 返回 MsgEntity<PageInfo<FileEntity>>
+        return new MsgEntity<>("SUCCESS", "200", fileEntityListPageInfo); // 确保返回类型一致
     }
+
 
     @RequestMapping(value = "/getRecentlyReadList", method = RequestMethod.GET)
     public MsgEntity<List<FileEntity>> getRecentlyReadList(@AuthUser AuthUserEntity authUser,

@@ -76,7 +76,6 @@ public class UserInfoServiceImpl implements UserInfoService {
             throw new BusinessException("-1", "用户不存在");
         }
 
-
         // 超级管理员可以修改所有信息
         if (authUser.isSuperAdmin()) {
             if (updatedInfo.getRole() != null) {
@@ -100,12 +99,12 @@ public class UserInfoServiceImpl implements UserInfoService {
                 userEntity.setIsValid(updatedInfo.getIsValid());
             }
 
-            System.out.print("Current User: " + userEntity);
-            System.out.print("Updated Info: " + updatedInfo);
-
             // 允许修改其他信息
             if (updatedInfo.getNickname() != null) {
+                System.out.println("Old User Nickname: " + userEntity.getNickname());
+                System.out.println("UpdateInfo's Nickname: " + updatedInfo.getNickname());
                 userEntity.setNickname(updatedInfo.getNickname());
+                System.out.println("Updating User Nickname: " + userEntity.getNickname());
             }
             if (updatedInfo.getPhoneNum() != null) {
                 userEntity.setPhoneNum(updatedInfo.getPhoneNum());
@@ -122,15 +121,7 @@ public class UserInfoServiceImpl implements UserInfoService {
             if (updatedInfo.getEmail() != null) {
                 userEntity.setEmail(updatedInfo.getEmail());
             }
-
-            // 只有超级管理员能封禁管理员和超级管理员，普通管理员不能
-            if (updatedInfo.getIsValid() != null) {
-                if (userEntity.getRole() != null &&
-                        (userEntity.getRole().equals("admin") || userEntity.getRole().equals("superadmin"))) {
-                    throw new BusinessException("-4", "无权限封禁管理员或超级管理员");
-                }
-                userEntity.setIsValid(updatedInfo.getIsValid());
-            }
+            // userService.saveOrUpdate(userEntity);
         } else {
             throw new BusinessException("-2", "无权限更新此信息");
         }
@@ -144,36 +135,51 @@ public class UserInfoServiceImpl implements UserInfoService {
         }
 
         UserExtraEntity updateInfoExtraEntity = updatedInfo.getUserExtraEntity();
+        int updateExtra = 0;
         if (updateInfoExtraEntity != null) {
             if (updateInfoExtraEntity.getCollege() != null) {
                 tempUserExtraEntity.setCollege(updateInfoExtraEntity.getCollege());
+                updateExtra = 1;
             }
             if (updateInfoExtraEntity.getMajor() != null) {
                 tempUserExtraEntity.setMajor(updateInfoExtraEntity.getMajor());
+                updateExtra = 1;
             }
             if (updateInfoExtraEntity.getBirthday() != null) {
                 tempUserExtraEntity.setBirthday(updateInfoExtraEntity.getBirthday());
+                updateExtra = 1;
             }
             if (updateInfoExtraEntity.getSex() != null) {
                 tempUserExtraEntity.setSex(updateInfoExtraEntity.getSex());
+                updateExtra = 1;
             }
             if (updateInfoExtraEntity.getPersonalSignature() != null) {
                 tempUserExtraEntity.setPersonalSignature(updateInfoExtraEntity.getPersonalSignature());
+                updateExtra = 1;
             }
-        } else {
-            throw new BusinessException("-3", "用户附加信息为空");
         }
 
-        // 更新用户信息到数据库
-        // 执行更新
-        boolean result = userService.updateById(userEntity);
-        if (!result) {
+        // 同时更新用户信息和用户附加信息到数据库
+        boolean userUpdateResult = userService.saveOrUpdate(userEntity);
+        boolean extraUpdateResult;
+        if(updateExtra == 1) {
+             extraUpdateResult = userExtraService.saveOrUpdate(tempUserExtraEntity);
+        }else {
+            extraUpdateResult = false;
+        }
+
+
+        if (!userUpdateResult) {
             System.out.print("User update did not affect any rows in the database.");
         }
-        userExtraService.saveOrUpdate(tempUserExtraEntity);
+        if (!extraUpdateResult) {
+            System.out.print("User extra update did not affect any rows in the database.");
+        }
 
         return userEntity;
     }
+
+
 
     /**
      * 未分页搜索用户信息
