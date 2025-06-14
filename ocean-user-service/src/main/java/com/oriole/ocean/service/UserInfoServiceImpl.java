@@ -116,8 +116,13 @@ public class UserInfoServiceImpl implements UserInfoService {
         // 更新用户附加信息
         updateUserExtraInfo(userEntity, updatedInfo);
 
+        boolean userUpdateResult = false;
         // 同时更新用户信息和用户附加信息到数据库
-        boolean userUpdateResult = userService.saveOrUpdate(userEntity);
+        if(userService != null) {
+            userUpdateResult = userService.saveOrUpdate(userEntity);
+        } else {
+            System.out.print("userUpdateResult is null");
+        }
         boolean extraUpdateResult = updateUserExtraInfoToDb(userEntity);
 
         if (!userUpdateResult) {
