@@ -76,28 +76,19 @@ public class UserInfoServiceImpl implements UserInfoService {
             throw new BusinessException("-1", "用户不存在");
         }
 
-        // 超级管理员可以修改所有信息
+        // 权限检查和基本信息更新逻辑保持不变...
         if (authUser.isSuperAdmin()) {
-            // 超级管理员独有权限：修改角色
             if (updatedInfo.getRole() != null) {
                 userEntity.setRole(updatedInfo.getRole());
             }
-
-            // 修改用户有效性（超级管理员无限制）
             if (updatedInfo.getIsValid() != null) {
                 userEntity.setIsValid(updatedInfo.getIsValid());
             }
-
-            // 超级管理员也能修改所有其他信息
             updateBasicUserInfo(userEntity, updatedInfo);
-
         } else if (authUser.isAdmin()) {
-            // 管理员不能修改角色
             if (updatedInfo.getRole() != null) {
                 throw new BusinessException("-6", "无权限修改用户角色");
             }
-
-            // 管理员修改 isValid 需要检查目标用户角色
             if (updatedInfo.getIsValid() != null) {
                 if (userEntity.getRole() != null &&
                         (userEntity.getRole().equals("admin") || userEntity.getRole().equals("superadmin"))) {
@@ -105,31 +96,30 @@ public class UserInfoServiceImpl implements UserInfoService {
                 }
                 userEntity.setIsValid(updatedInfo.getIsValid());
             }
-
-            // 管理员可以修改其他基本信息
             updateBasicUserInfo(userEntity, updatedInfo);
-
         } else {
             throw new BusinessException("-2", "无权限更新此信息");
         }
 
-        // 更新用户附加信息
-        updateUserExtraInfo(userEntity, updatedInfo);
-
+        // 更新用户基本信息
         boolean userUpdateResult = false;
-        // 同时更新用户信息和用户附加信息到数据库
-        if(userService != null) {
-            userUpdateResult = userService.saveOrUpdate(userEntity);
-        } else {
-            System.out.print("userUpdateResult is null");
+        if (userService != null) {
+            try {
+                userUpdateResult = userService.saveOrUpdate(userEntity);
+            } catch (Exception e) {
+                System.err.println("Error updating user: " + e.getMessage());
+                throw new BusinessException("-1", "更新用户基本信息失败");
+            }
         }
-        boolean extraUpdateResult = updateUserExtraInfoToDb(userEntity);
+
+        // 更新用户附加信息
+        boolean extraUpdateResult = updateUserExtraInfo(userEntity, updatedInfo);
 
         if (!userUpdateResult) {
-            System.out.print("User update did not affect any rows in the database.");
+            System.out.println("User update did not affect any rows in the database.");
         }
         if (!extraUpdateResult) {
-            System.out.print("User extra update did not affect any rows in the database.");
+            System.out.println("User extra update failed.");
         }
 
         return userEntity;
@@ -165,45 +155,58 @@ public class UserInfoServiceImpl implements UserInfoService {
     /**
      * 更新用户附加信息
      */
-    private void updateUserExtraInfo(UserEntity userEntity, UserEntity updatedInfo) {
-        UserExtraEntity tempUserExtraEntity = userEntity.getUserExtraEntity();
-        if (tempUserExtraEntity == null) {
-            tempUserExtraEntity = new UserExtraEntity();
-            tempUserExtraEntity.setUsername(userEntity.getUsername());
-            userEntity.setUserExtraEntity(tempUserExtraEntity);
-        }
-
+    private boolean updateUserExtraInfo(UserEntity userEntity, UserEntity updatedInfo) {
         UserExtraEntity updateInfoExtraEntity = updatedInfo.getUserExtraEntity();
-        if (updateInfoExtraEntity != null) {
-            if (updateInfoExtraEntity.getCollege() != null) {
-                tempUserExtraEntity.setCollege(updateInfoExtraEntity.getCollege());
-            }
-            if (updateInfoExtraEntity.getMajor() != null) {
-                tempUserExtraEntity.setMajor(updateInfoExtraEntity.getMajor());
-            }
-            if (updateInfoExtraEntity.getBirthday() != null) {
-                tempUserExtraEntity.setBirthday(updateInfoExtraEntity.getBirthday());
-            }
-            if (updateInfoExtraEntity.getSex() != null) {
-                tempUserExtraEntity.setSex(updateInfoExtraEntity.getSex());
-            }
-            if (updateInfoExtraEntity.getPersonalSignature() != null) {
-                tempUserExtraEntity.setPersonalSignature(updateInfoExtraEntity.getPersonalSignature());
+        if (updateInfoExtraEntity == null) {
+            return true; // 没有附加信息需要更新
+        }
+
+        // 检查是否有实际的更新字段
+        boolean hasUpdates = false;
+
+        // 获取或创建目标用户的附加信息
+        UserExtraEntity targetUserExtraEntity = userEntity.getUserExtraEntity();
+        if (targetUserExtraEntity == null) {
+            targetUserExtraEntity = new UserExtraEntity();
+            targetUserExtraEntity.setUsername(userEntity.getUsername());
+            userEntity.setUserExtraEntity(targetUserExtraEntity);
+        }
+
+        // 只更新非空字段
+        if (updateInfoExtraEntity.getCollege() != null) {
+            targetUserExtraEntity.setCollege(updateInfoExtraEntity.getCollege());
+            hasUpdates = true;
+        }
+        if (updateInfoExtraEntity.getMajor() != null) {
+            targetUserExtraEntity.setMajor(updateInfoExtraEntity.getMajor());
+            hasUpdates = true;
+        }
+        if (updateInfoExtraEntity.getBirthday() != null) {
+            targetUserExtraEntity.setBirthday(updateInfoExtraEntity.getBirthday());
+            hasUpdates = true;
+        }
+        if (updateInfoExtraEntity.getSex() != null) {
+            targetUserExtraEntity.setSex(updateInfoExtraEntity.getSex());
+            hasUpdates = true;
+        }
+        if (updateInfoExtraEntity.getPersonalSignature() != null) {
+            targetUserExtraEntity.setPersonalSignature(updateInfoExtraEntity.getPersonalSignature());
+            hasUpdates = true;
+        }
+
+        // 只有当有实际更新时才执行数据库操作
+        if (hasUpdates) {
+            try {
+                return userExtraService.saveOrUpdate(targetUserExtraEntity);
+            } catch (Exception e) {
+                System.err.println("Error updating UserExtraEntity: " + e.getMessage());
+                e.printStackTrace();
+                return false;
             }
         }
-    }
 
-    /**
-     * 将用户附加信息保存到数据库
-     */
-    private boolean updateUserExtraInfoToDb(UserEntity userEntity) {
-        UserExtraEntity userExtraEntity = userEntity.getUserExtraEntity();
-        if (userExtraEntity != null) {
-            return userExtraService.saveOrUpdate(userExtraEntity);
-        }
-        return true; // 如果没有附加信息需要更新，认为成功
+        return true; // 没有更新，但不算失败
     }
-
 
     /**
      * 未分页搜索用户信息
