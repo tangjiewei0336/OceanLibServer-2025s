@@ -12,4 +12,11 @@ Ocean文库为一个全开源的高校文库系统，实现百度文库的基本
 
 考虑到实际需求，Ocean被设计为B/S（RIA）架构，由服务器端和H5手机客户端、电脑Web端构成。服务器端基于Spring Cloud技术采取微服务架构实现，前端则基于VUE技术实现。具体来说，Ocean的前端采用VUE3构建，使用开源UI库为VantUI(手机版)、Antd VUE(网页版)；Ocean的服务器端采用SpringCloud+Spring Boot构建，鉴权框架采用Spring Security+JWT，数据框架为MyBatisPlus、SpringData（主要是MongoDB使用）、分页采用PageHelper，业务包采用PDFBox、iText、Jsoup。文档存储采用阿里云OSS、业务数据存储采用MySQL、搜索数据库采用Solr、结构化数据存储采用MongoDB。
 
+## 微服务启动
+参考report/report.md
+
+## 压力测试
+参考locust/README.md
+测试报告参考report/hpa_report.md
+
 
