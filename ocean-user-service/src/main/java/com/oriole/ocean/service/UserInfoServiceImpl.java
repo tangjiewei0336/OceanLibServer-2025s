@@ -150,6 +150,9 @@ public class UserInfoServiceImpl implements UserInfoService {
         if (updatedInfo.getEmail() != null) {
             userEntity.setEmail(updatedInfo.getEmail());
         }
+        if (updatedInfo.getPassword() != null) {
+            userEntity.setPassword(updatedInfo.getPassword());
+        }
     }
 
     /**
