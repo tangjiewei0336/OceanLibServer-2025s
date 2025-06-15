@@ -1,4 +1,4 @@
-package com.oriole.ocean.service;
+package com.oriole.ocean.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.oriole.ocean.common.enumerate.DocStatisticItemType;
@@ -6,7 +6,9 @@ import com.oriole.ocean.common.enumerate.MainType;
 import com.oriole.ocean.common.po.mysql.UserCollectionEntity;
 import com.oriole.ocean.common.service.FileExtraService;
 import com.oriole.ocean.common.vo.BusinessException;
+import com.oriole.ocean.service.UserCollectionService;
 import org.apache.dubbo.config.annotation.DubboReference;
+import org.apache.dubbo.config.annotation.DubboService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
@@ -21,7 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class UserCollectionServiceImpl {
+@DubboService
+public class UserCollectionServiceImpl implements UserCollectionService {
 
     @Autowired
     private MongoTemplate mongoTemplate;

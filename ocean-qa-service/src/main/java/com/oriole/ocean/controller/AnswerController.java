@@ -1,12 +1,13 @@
 package com.oriole.ocean.controller;
 
 import com.oriole.ocean.common.auth.AuthUser;
+import com.oriole.ocean.common.enumerate.MainType;
 import com.oriole.ocean.common.po.mongo.AnswerEntity;
-import com.oriole.ocean.common.service.NotifyService;
-import com.oriole.ocean.common.service.UserBehaviorService;
+import com.oriole.ocean.common.po.mysql.UserCollectionEntity;
 import com.oriole.ocean.common.vo.AuthUserEntity;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.service.AnswerService;
+import com.oriole.ocean.service.UserCollectionService;
 import com.sun.istack.internal.NotNull;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -21,6 +22,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
+import java.util.List;
+
 @RestController
 @RequestMapping("/qaService/answer")
 public class AnswerController {
@@ -28,10 +32,7 @@ public class AnswerController {
     private final AnswerService answerService;
 
     @DubboReference
-    UserBehaviorService userBehaviorService;
-
-    @DubboReference
-    NotifyService notifyService;
+    UserCollectionService userCollectionService;
 
     public AnswerController(AnswerService answerService) {
         this.answerService = answerService;
@@ -160,4 +161,44 @@ public class AnswerController {
         MsgEntity<Page<AnswerEntity>> result = answerService.getAllAnswers(page, pageSize, authUser.getUsername(), includeDeleted);
         return ResponseEntity.ok(result);
     }
+
+    @ApiOperation(value = "我收藏的回答查询", nickname = "getAnswersByIds", response = MsgEntity.class, tags = {"用户服务器/ocean-qa-service/AnswerController",})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "返回回答列表", response = MsgEntity.class),
+            @ApiResponse(code = 401, message = "未授权", response = Object.class),
+            @ApiResponse(code = 500, message = "服务器内部错误", response = Object.class)})
+    @GetMapping(value = "/likedAnswers", produces = {"application/json"})
+    public ResponseEntity<MsgEntity<Page<AnswerEntity>>> getLikedAnswers(
+            @AuthUser AuthUserEntity authUser,
+            @RequestParam(required = false) String username,
+            @NotNull @ApiParam(value = "页码", required = true) @RequestParam(value = "page", required = true) Integer page,
+            @NotNull @ApiParam(value = "每页显示的回答数量", required = true) @RequestParam(value = "pageSize", required = true) Integer pageSize,
+            @NotNull @ApiParam(value = "收藏夹 ID", required = true) @RequestParam(value = "collectionID", required = true) String collectionID) {
+
+        username = authUser.getAllowOperationUsername(username);
+
+        UserCollectionEntity.CollectionEntity collectionEntity = userCollectionService.getCollectionByUsernameAndCollectionID(username, collectionID, MainType.ANSWER);
+
+        Integer[] answerIds = collectionEntity.getItems().toArray(new Integer[0]);
+
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByIds(answerIds, page, pageSize, authUser.getUsername());
+        return ResponseEntity.ok(result);
+    }
+
+    @ApiOperation(value = "/batch", nickname = "batchGetAnswers", notes = "批量获取回答信息", response = MsgEntity.class, tags = {"用户服务器/ocean-qa-service/AnswerController",})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "返回回答列表", response = MsgEntity.class),
+            @ApiResponse(code = 401, message = "未授权", response = Object.class),
+            @ApiResponse(code = 500, message = "服务器内部错误", response = Object.class)})
+    @PostMapping(value = "/batch", produces = {"application/json"})
+    public ResponseEntity<MsgEntity<Page<AnswerEntity>>> batchGetAnswers(
+            @AuthUser AuthUserEntity authUser,
+            @NotNull @ApiParam(value = "回答 ID 列表", required = true) @Valid @RequestBody( required = true) HashMap<String, Integer[]> itemList) {
+
+        Integer[] answerIds = itemList.get("itemList");
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByIds(answerIds);
+        return ResponseEntity.ok(result);
+    }
+
+
 }

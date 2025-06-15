@@ -5,6 +5,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import javax.validation.Valid;
 import java.util.List;
 
 public interface AnswerRepository extends MongoRepository<AnswerEntity, String> {
@@ -21,4 +22,6 @@ public interface AnswerRepository extends MongoRepository<AnswerEntity, String> 
     Page<AnswerEntity> findByQuestionIdAndQuestionVisibleTrue(Integer questionId, Pageable pageable);
 
     Page<AnswerEntity> findByUserId(String username, Pageable pageable);
+
+    Page<AnswerEntity> findByIdInAndIsDeletedFalseAndQuestionVisibleTrue(@Valid Integer[] id, Pageable pageable);
 }

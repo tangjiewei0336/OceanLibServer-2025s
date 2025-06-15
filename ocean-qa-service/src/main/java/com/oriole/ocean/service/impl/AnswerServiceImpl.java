@@ -216,4 +216,39 @@ public class AnswerServiceImpl implements AnswerService {
         answerRepository.saveAll(answers);
         return answers.size();
     }
+
+    @Override
+    public MsgEntity<Page<AnswerEntity>> getAnswersByIds(Integer[] answerIds, Integer page, Integer pageSize, String username) {
+
+        Pageable pageable = PageRequest.of(page - 1, pageSize, Sort.by(Sort.Direction.DESC, "create_time"));
+        Page<AnswerEntity> answers = answerRepository.findByIdInAndIsDeletedFalseAndQuestionVisibleTrue(answerIds, pageable);
+
+        if (answers == null || answers.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No answers found for the provided IDs");
+        }
+
+        for (AnswerEntity answer : answers) {
+            answer.setQuestion(questionService.getQuestionById(answer.getQuestionId()));
+            enrichAnswerDetails(answer, username);
+        }
+
+        return new MsgEntity<>("SUCCESS", "Answers retrieved successfully", answers);
+    }
+
+    @Override
+    public MsgEntity<Page<AnswerEntity>> getAnswersByIds(@Valid Integer[] answerIds) {
+
+        // 不分页
+        Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE, Sort.by(Sort.Direction.DESC, "create_time"));
+        Page<AnswerEntity> answers = answerRepository.findByIdInAndIsDeletedFalseAndQuestionVisibleTrue(answerIds, pageable);
+        if (answers == null || answers.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No answers found for the provided IDs");
+        }
+        for (AnswerEntity answer : answers) {
+            answer.setQuestion(questionService.getQuestionById(answer.getQuestionId()));
+            enrichAnswerDetails(answer, null); // 不需要用户名
+        }
+        return new MsgEntity<>("SUCCESS", "Answers retrieved successfully", answers);
+
+    }
 }

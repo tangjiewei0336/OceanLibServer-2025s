@@ -27,4 +27,8 @@ public interface AnswerService {
     AnswerEntity getAnswerById(Integer answerId, String username);
 
     int makeAnswerVisible(Integer questionId, boolean visibility);
+
+    MsgEntity<Page<AnswerEntity>> getAnswersByIds(@Valid Integer[] answerIds, @Valid Integer page, @Valid Integer pageSize, String username);
+//
+    MsgEntity<Page<AnswerEntity>> getAnswersByIds(@Valid Integer[] answerIds);
 }
