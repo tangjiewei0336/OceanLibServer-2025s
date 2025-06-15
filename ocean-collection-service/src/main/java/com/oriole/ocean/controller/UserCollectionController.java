@@ -77,7 +77,7 @@ public class UserCollectionController {
         // 需要一并清空用户的收藏情况记录
         for (Integer itemID : collectionEntity.getItems()) { // 遍历被删除的收藏夹中的文件对应用户行为记录
             UserBehaviorEntity userBehaviorEntityQuery = new UserBehaviorEntity(itemID, mainType, username, BehaviorType.DO_COLLECTION);
-            JSONArray collectionList = (JSONArray) userBehaviorService.findBehaviorRecord(userBehaviorEntityQuery).getExtraInfo(IN_COLLECTION);
+            List<String> collectionList = (List<String>) userBehaviorService.findBehaviorRecord(userBehaviorEntityQuery).getExtraInfo(IN_COLLECTION);
 
             collectionList.remove(collectionID);
             if (collectionList.isEmpty()) {//所有的收藏已经被全部删除了
@@ -160,7 +160,7 @@ public class UserCollectionController {
         }
         // 进行到了此处说明肯定有删除发生
         UserBehaviorEntity userBehaviorEntityQuery = new UserBehaviorEntity(itemID, mainType, username, BehaviorType.DO_COLLECTION);
-        JSONArray collectionList = (JSONArray) userBehaviorService.findBehaviorRecord(userBehaviorEntityQuery).getExtraInfo(IN_COLLECTION);
+        List<String> collectionList = (List<String>) userBehaviorService.findBehaviorRecord(userBehaviorEntityQuery).getExtraInfo(IN_COLLECTION);
         collectionList.remove(collectionID);
 
         if (collectionList.isEmpty()) {//所有的收藏已经被全部删除了
