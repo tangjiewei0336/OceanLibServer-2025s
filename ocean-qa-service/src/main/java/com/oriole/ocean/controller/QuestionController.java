@@ -183,7 +183,15 @@ public class QuestionController {
             @AuthUser AuthUserEntity authUser,
             @NotNull @ApiParam(value = "要删除的问题 ID", required = true) @Valid @RequestParam(value = "questionId", required = true) Integer questionId) {
 
-        MsgEntity<String> result = questionService.deleteQuestion(questionId, authUser.getUsername());
+        QuestionEntity question = questionService.getQuestionById(questionId);
+
+        if (!question.getUserId().equals(authUser.getUsername()) && !(authUser.isAdmin() || authUser.isSuperAdmin())) {
+            // 如果不是管理员或超级管理员，并且不是问题的创建者，则禁止修改
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to update this question");
+        }
+
+
+        MsgEntity<String> result = questionService.deleteQuestion(questionId);
         return ResponseEntity.ok(result);
     }
 

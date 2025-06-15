@@ -19,6 +19,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/qaService/answer")
@@ -101,7 +102,13 @@ public class AnswerController {
             @AuthUser AuthUserEntity authUser,
             @NotNull @ApiParam(value = "要删除的回答 ID", required = true) @Valid @RequestParam(value = "answerId", required = true) Integer answerId) {
 
-        MsgEntity<String> result = answerService.deleteAnswer(answerId, authUser.getUsername());
+        AnswerEntity answer = answerService.getAnswerById(answerId, null);
+        if (!answer.getUserId().equals(authUser.getUsername()) && !(authUser.isAdmin() || authUser.isSuperAdmin())) {
+            // 如果不是管理员或超级管理员，并且不是问题的创建者，则禁止修改
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to delete this answer");
+        }
+
+        MsgEntity<String> result = answerService.deleteAnswer(answerId);
         return ResponseEntity.ok(result);
     }
 

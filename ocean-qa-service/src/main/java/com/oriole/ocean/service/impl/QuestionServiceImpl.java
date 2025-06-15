@@ -177,14 +177,10 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     @Override
-    public MsgEntity<String> deleteQuestion(Integer questionId, String userId) {
+    public MsgEntity<String> deleteQuestion(Integer questionId) {
         QuestionEntity question = mongoQuestionRepository.findByBindIdAndIsDeletedFalse(questionId);
         if (question == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Question not found");
-        }
-
-        if (!question.getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to delete this question");
         }
 
         question.setIsDeleted(true);
