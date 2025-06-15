@@ -190,7 +190,7 @@ public class AnswerController {
             @ApiResponse(code = 200, message = "返回回答列表", response = MsgEntity.class),
             @ApiResponse(code = 401, message = "未授权", response = Object.class),
             @ApiResponse(code = 500, message = "服务器内部错误", response = Object.class)})
-    @GetMapping(value = "/batch", produces = {"application/json"})
+    @PostMapping(value = "/batch", produces = {"application/json"})
     public ResponseEntity<MsgEntity<Page<AnswerEntity>>> batchGetAnswers(
             @AuthUser AuthUserEntity authUser,
             @NotNull @ApiParam(value = "回答 ID 列表", required = true) @Valid @RequestBody( required = true) HashMap<String, Integer[]> itemList) {
