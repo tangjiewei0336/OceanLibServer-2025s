@@ -15,6 +15,9 @@ Ocean文库为一个全开源的高校文库系统，实现百度文库的基本
 ## 微服务启动
 参考report/report.md
 
+## 本地启动
+参考Ocean微服务运行指南.pdf(其中nacos部分可使用微服务)
+
 ## 压力测试
 参考locust/README.md
 测试报告参考report/hpa_report.md
