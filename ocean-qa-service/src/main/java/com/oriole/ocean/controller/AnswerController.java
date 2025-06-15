@@ -22,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -192,10 +193,10 @@ public class AnswerController {
     @GetMapping(value = "/batch", produces = {"application/json"})
     public ResponseEntity<MsgEntity<Page<AnswerEntity>>> batchGetAnswers(
             @AuthUser AuthUserEntity authUser,
-            @NotNull @ApiParam(value = "回答 ID 列表", required = true) @Valid @RequestParam( required = true) Integer[] itemList) {
+            @NotNull @ApiParam(value = "回答 ID 列表", required = true) @Valid @RequestBody( required = true) HashMap<String, Integer[]> itemList) {
 
-
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByIds(itemList);
+        Integer[] answerIds = itemList.get("itemList");
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByIds(answerIds);
         return ResponseEntity.ok(result);
     }
 
