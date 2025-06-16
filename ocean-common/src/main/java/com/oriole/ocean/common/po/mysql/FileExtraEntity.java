@@ -26,11 +26,15 @@ public class FileExtraEntity implements java.io.Serializable {
     private String originalAuthor;
     private String copyrightNotice;
 
-    public FileExtraEntity(Integer fileID, Byte isOriginal, String originalAuthor, String copyrightNotice) {
+    public FileExtraEntity(Integer fileID, Byte isOriginal, String originalAuthor, String copyrightNotice,
+                           Byte isProCert, Byte isOfficial, Byte isVipIncome) {
         this.fileID = fileID;
         this.isOriginal = isOriginal;
         this.originalAuthor = originalAuthor;
         this.copyrightNotice = copyrightNotice;
+        this.isProCert = isProCert;
+        this.isOfficial = isOfficial;
+        this.isVipIncome = isVipIncome;
     }
 
     public FileExtraEntity() {

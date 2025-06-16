@@ -95,8 +95,14 @@ public class DocInfoController {
                                                 @RequestParam(required = false) Byte isAllowComment,
                                                 @RequestParam(required = false) Integer folderID,
                                                 @RequestParam(required = false) String copyrightNotice,
+                                                @RequestParam(required = false) String originalAuthor,
+
+                                                @RequestParam(required = false) Byte isProCert,
+                                                @RequestParam(required = false) Byte isOfficial,
                                                 @RequestParam(required = false) Byte isOriginal,
-                                                @RequestParam(required = false) String originalAuthor
+                                                @RequestParam(required = false) Byte isVipIncome,
+                                                @RequestParam(required = false) String uploadDate
+
     ) {
         FileEntity fileEntity = fileService.getFileBaseInfoByFileID(fileID);
 
@@ -107,9 +113,10 @@ public class DocInfoController {
         FileEntity newFileEntity = new FileEntity(fileID, title, abstractContent,
                 paymentMethod, paymentAmount,
                 isAllowAnon, isAllowVipfree, isAllowComment,
-                folderID);
+                folderID, uploadDate);
 
-        FileExtraEntity newFileExtraEntity = new FileExtraEntity(newFileEntity.getFileID(), isOriginal, originalAuthor, copyrightNotice);
+        FileExtraEntity newFileExtraEntity = new FileExtraEntity(newFileEntity.getFileID(), isOriginal, originalAuthor, copyrightNotice,
+                isProCert, isOfficial, isVipIncome);
         newFileEntity.setFileExtraEntity(newFileExtraEntity);
 
         if (!authUser.isAdmin()) {

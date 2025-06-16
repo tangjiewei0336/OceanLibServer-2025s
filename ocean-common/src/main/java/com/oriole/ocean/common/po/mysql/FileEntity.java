@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -24,7 +26,7 @@ public class FileEntity implements java.io.Serializable {
     private String fileType;
     private String uploadUsername;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    @JsonFormat(pattern = "yyyy-MM-dd HHmmss", timezone = "GMT+8")
     private Date uploadDate;
     private String realObjectName;
     private String previewPdfObjectName;
@@ -43,13 +45,13 @@ public class FileEntity implements java.io.Serializable {
     private Integer typeID;
 
 
-    @TableField(exist = false)  //数据库中是无此字段的，MP中要排除掉
+    @TableField(exist = false)  // 数据库中是无此字段的，MP中要排除掉
     private List<String> tagNames;
 
-    @TableField(exist = false)  //数据库中是无此字段的，MP中要排除掉
+    @TableField(exist = false)  // 数据库中是无此字段的，MP中要排除掉
     private FileExtraEntity fileExtraEntity;
 
-    @TableField(exist = false)  //数据库中是无此字段的，MP中要排除掉
+    @TableField(exist = false)  // 数据库中是无此字段的，MP中要排除掉
     private FileCheckEntity fileCheckEntity;
 
     public FileEntity() {
@@ -89,11 +91,16 @@ public class FileEntity implements java.io.Serializable {
         this.isApproved = 0;
     }
 
+    public Date stringToDate(String dateString) throws ParseException {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HHmm");
+        return sdf.parse(dateString);  // 直接解析为 Date
+    }
+
     public FileEntity(Integer fileID, String title,
                       String abstractContent,
                       Byte paymentMethod, Integer paymentAmount,
                       Byte isAllowAnon, Byte isAllowVipfree, Byte isAllowComment,
-                      Integer folderID) {
+                      Integer folderID, String uploadDate) {
         this.fileID = fileID;
         this.title = title;
         this.abstractContent = abstractContent;
@@ -103,5 +110,10 @@ public class FileEntity implements java.io.Serializable {
         this.isAllowVipfree = isAllowVipfree;
         this.isAllowComment = isAllowComment;
         this.folderID = folderID;
+        try {
+            this.uploadDate = this.stringToDate(uploadDate);
+        } catch (ParseException e) {
+            System.err.println("日期解析失败"  + uploadDate);
+        }
     }
 }
