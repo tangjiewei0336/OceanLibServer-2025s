@@ -6,11 +6,9 @@ import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.repository.AnswerRepository;
 import com.oriole.ocean.service.QuestionService;
 import com.oriole.ocean.service.SequenceGeneratorService;
-import com.oriole.ocean.common.service.UserBehaviorService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
@@ -191,7 +189,7 @@ class AnswerServiceImplTest {
         when(answerRepository.findByIdAndIsDeletedFalseAndQuestionVisibleTrue(answerId)).thenReturn(existingAnswer);
 
         // Act
-        MsgEntity<String> result = answerService.deleteAnswer(answerId, userId);
+        MsgEntity<String> result = answerService.deleteAnswer(answerId);
 
         // Assert
         assertNotNull(result);
@@ -212,7 +210,7 @@ class AnswerServiceImplTest {
         when(questionService.getQuestionById(any())).thenReturn(new QuestionEntity());
 
         // Act
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByUserId(username, page, pageSize);
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByUserId(username, page, pageSize, (boolean) includeDeleted);
 
         // Assert
         assertNotNull(result);
@@ -232,7 +230,7 @@ class AnswerServiceImplTest {
         when(questionService.getQuestionById(any())).thenReturn(new QuestionEntity());
 
         // Act
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAllAnswers(page, pageSize, null);
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAllAnswers(page, pageSize, null, includeDeleted);
 
         // Assert
         assertNotNull(result);

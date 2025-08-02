@@ -225,7 +225,7 @@ public class QuestionServiceImplTest {
         when(mongoQuestionRepository.findByBindIdAndIsDeletedFalse(questionId)).thenReturn(existingQuestion);
 
         // Act
-        MsgEntity<String> result = questionService.deleteQuestion(questionId, userId);
+        MsgEntity<String> result = questionService.deleteQuestion(questionId);
 
         // Assert
         assertNotNull(result);
@@ -242,7 +242,7 @@ public class QuestionServiceImplTest {
 
         // Act & Assert
         assertThrows(ResponseStatusException.class, () -> 
-            questionService.deleteQuestion(questionId, userId)
+            questionService.deleteQuestion(questionId)
         );
     }
 
@@ -258,7 +258,7 @@ public class QuestionServiceImplTest {
 
         // Act & Assert
         assertThrows(ResponseStatusException.class, () -> 
-            questionService.deleteQuestion(questionId, userId)
+            questionService.deleteQuestion(questionId)
         );
     }
 

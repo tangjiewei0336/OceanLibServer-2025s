@@ -140,7 +140,7 @@ public class QuestionServiceIntegrationTest {
     @Test
     void testDeleteQuestion() {
         // 删除问题
-        MsgEntity<String> deleteResult = questionService.deleteQuestion(testQuestionId, testUserId);
+        MsgEntity<String> deleteResult = questionService.deleteQuestion(testQuestionId);
 
         assertNotNull(deleteResult);
         assertEquals("SUCCESS", deleteResult.getState());

@@ -1,7 +1,6 @@
 package com.oriole.ocean.integration;
 
 import com.oriole.ocean.common.po.mongo.AnswerEntity;
-import com.oriole.ocean.common.po.mongo.QuestionEntity;
 import com.oriole.ocean.common.vo.MsgEntity;
 import com.oriole.ocean.repository.AnswerRepository;
 import com.oriole.ocean.service.AnswerService;
@@ -13,8 +12,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -58,8 +55,7 @@ public class AnswerServiceIntegrationTest {
             null,
             true,  // isPost
             false, // isHide
-            null,  // setReward
-            testUserId
+            null  // setReward
         );
         
         // 创建测试答案
@@ -99,8 +95,7 @@ public class AnswerServiceIntegrationTest {
             null,
             false, // isPost
             true,  // isHide
-            null,  // setReward
-            testUserId
+            null  // setReward
         );
 
         // 尝试提交答案
@@ -158,7 +153,7 @@ public class AnswerServiceIntegrationTest {
     @Test
     void testDeleteAnswer_Success() {
         // 删除答案
-        MsgEntity<String> result = answerService.deleteAnswer(testAnswerId, testUserId);
+        MsgEntity<String> result = answerService.deleteAnswer(testAnswerId);
 
         assertNotNull(result);
         assertEquals("SUCCESS", result.getState());
@@ -174,7 +169,7 @@ public class AnswerServiceIntegrationTest {
         // 尝试用其他用户删除答案
         String otherUserId = "other_user_" + System.currentTimeMillis();
         assertThrows(ResponseStatusException.class, () ->
-            answerService.deleteAnswer(testAnswerId, otherUserId)
+            answerService.deleteAnswer(testAnswerId)
         );
     }
 
@@ -190,7 +185,7 @@ public class AnswerServiceIntegrationTest {
         }
 
         // 获取用户的答案
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByUserId(testUserId, 1, 3);
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAnswersByUserId(testUserId, 1, 3, (boolean) includeDeleted);
 
         assertNotNull(result);
         assertEquals("SUCCESS", result.getState());
@@ -216,7 +211,7 @@ public class AnswerServiceIntegrationTest {
         }
 
         // 获取所有答案
-        MsgEntity<Page<AnswerEntity>> result = answerService.getAllAnswers(1, 3, testUserId);
+        MsgEntity<Page<AnswerEntity>> result = answerService.getAllAnswers(1, 3, testUserId, includeDeleted);
 
         assertNotNull(result);
         assertEquals("SUCCESS", result.getState());
